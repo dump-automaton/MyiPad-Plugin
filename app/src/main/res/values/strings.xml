@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">MyiPad Plugin</string>
+    <string name="plugin_not_active">MyiPad Plugin is not active.</string>
+    <string name="plugin_active">MyiPad Plugin is active.</string>
+    <string name="plugin_safe_mode">MyiPad Plugin is active, but safe mode is on.</string>
+    <string name="safe_mode">Safe Mode</string>
+    <string name="safe_mode_summary">Tweaks will not take effect in safe mode.</string>
+    <string name="compatibility">Compatibility</string>
+    <string name="compatibility_with_vx">Compatibility with VirtualXposed</string>
+    <string name="general_tweaks">General Tweaks</string>
+    <string name="fake_hardware_info">Fake hardware info</string>
+    <string name="fake_version">Fake version</string>
+    <string name="disable_auto_update">Disable auto update</string>
+    <string name="fake_wifi_info">Fake wifi info</string>
+    <string name="make_all_dialog_cancelable">Make all dialog cancelable</string>
+    <string name="use_external_pdf_viewer">Use external PDF viewer</string>
+    <string name="allow_all_permissions">Allow all permissions</string>
+    <string name="disable_im">Disable IM Service</string>
+    <string name="myipad_tweaks">MyiPad Tweaks</string>
+    <string name="disable_mdm">Disable MDM</string>
+    <string name="disable_lock_screen">Disable lock screen</string>
+    <string name="disable_useless_service">Disable useless service</string>
+    <string name="disable_useless_service_summary">Disable services such as time synchronization and usage upload.</string>
+    <string name="in_private">In Private mode (experimental)</string>
+    <string name="in_private_summary">Attempt to block uploading your status</string>
+    <string name="teacher_mode">Teacher Mode (experimental)</string>
+    <string name="utilities">Utilities</string>
+    <string name="screen_cast_with_url">Screen Cast with URL…</string>
+    <string name="debug">Debug</string>
+    <string name="disable_ssl_pinning">Disable SSL Pinning</string>
+    <string name="dump_logcat">Dump logcat</string>
+    <string name="restart_app">Restart application</string>
+    <string name="restart_app_summary">Changes will take effect after the App is restarted.</string>
+    <string name="home">Home</string>
+    <string name="crash_log">Crash log</string>
+    <string name="download_myipad">Download MyiPad</string>
+</resources>

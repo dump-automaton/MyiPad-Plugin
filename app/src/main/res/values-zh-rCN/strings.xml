@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyiPad Plugin</string>
+    <string name="plugin_not_active">MyiPad Plugin 未激活。</string>
+    <string name="plugin_active">MyiPad Plugin 已激活。</string>
+    <string name="plugin_safe_mode">MyiPad Plugin 已激活，但安全模式已开启。</string>
+    <string name="safe_mode">安全模式</string>
+    <string name="safe_mode_summary">安全模式下下列修改将不会生效</string>
+    <string name="compatibility">兼容性</string>
+    <string name="compatibility_with_vx">兼容 VirtualXposed</string>
+    <string name="general_tweaks">通用调整</string>
+    <string name="fake_hardware_info">伪装硬件信息</string>
+    <string name="fake_version">伪装版本</string>
+    <string name="disable_auto_update">禁用自动更新</string>
+    <string name="fake_wifi_info">伪装 WiFi 信息</string>
+    <string name="make_all_dialog_cancelable">使所有对话框可取消</string>
+    <string name="use_external_pdf_viewer">使用外部 PDF 阅读器</string>
+    <string name="allow_all_permissions">允许所有权限</string>
+    <string name="disable_im">禁用 IM Service</string>
+    <string name="myipad_tweaks">少年派调整</string>
+    <string name="disable_mdm">禁用 MDM</string>
+    <string name="disable_lock_screen">禁用锁屏</string>
+    <string name="disable_useless_service">禁用冗余功能</string>
+    <string name="disable_useless_service_summary">禁用时间同步、用量上传等服务</string>
+    <string name="in_private">In Private 模式（实验性）</string>
+    <string name="in_private_summary">尝试阻止上传状态</string>
+    <string name="teacher_mode">教师模式（实验性）</string>
+    <string name="utilities">实用工具</string>
+    <string name="screen_cast_with_url">带有 URL 的屏幕投射...</string>
+    <string name="debug">调试</string>
+    <string name="disable_ssl_pinning">禁用 SSL 固定</string>
+    <string name="dump_logcat">导出日志</string>
+    <string name="restart_app">重启应用程序</string>
+    <string name="restart_app_summary">设置更改将在应用程序重启后生效</string>
+    <string name="home">首页</string>
+    <string name="crash_log">崩溃日志</string>
+    <string name="download_myipad">下载少年派</string>
+</resources>

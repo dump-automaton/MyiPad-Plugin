@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_material"
+    tools:context=".ui.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".ui.MainActivity">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:elevation="2dp"
+            android:background="@color/card_background">
+            <Switch
+                android:id="@+id/safe_mode_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:checked="true"
+                android:text="@string/safe_mode"
+                android:textSize="16sp"/>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:elevation="2dp"
+            android:background="@color/card_background"
+            android:orientation="vertical">
+            <FrameLayout
+                android:id="@+id/status_container"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:foregroundGravity="center"
+                android:orientation="vertical"
+                tools:background="@color/darker_green">
+                <ImageView
+                    android:id="@+id/status_icon"
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:layout_gravity="center"
+                    tools:src="@drawable/ic_check_circle"/>
+            </FrameLayout>
+            <TextView
+                android:id="@+id/plugin_install_errors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="6dp"
+                android:textColor="@color/warning"
+                android:textStyle="bold"
+                tools:text="@string/plugin_active"
+                tools:textColor="@color/darker_green"/>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/download_myipad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@color/card_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="2dp">
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingTop="12dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_baseline_open_in_new_24" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:orientation="vertical"
+                    android:text="@string/download_myipad"
+                    android:textAppearance="@android:style/TextAppearance.Material.Subhead" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+</ScrollView>
