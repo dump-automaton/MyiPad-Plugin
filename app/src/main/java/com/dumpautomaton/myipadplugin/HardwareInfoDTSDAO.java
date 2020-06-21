@@ -121,7 +121,7 @@ public class HardwareInfoDTSDAO {
         StringBuilder stringBuilder3 = new StringBuilder();
         stringBuilder3.append(stringBuilder2);
         stringBuilder3.append("BOOTLOADER: ");
-        stringBuilder3.append(Build.BOOTLOADER);
+        stringBuilder3.append("P583ZCU2BRH1_B2BF");
         stringBuilder3.append("\n");
         stringBuilder2 = stringBuilder3.toString();
         stringBuilder3 = new StringBuilder();
@@ -145,19 +145,19 @@ public class HardwareInfoDTSDAO {
         stringBuilder3 = new StringBuilder();
         stringBuilder3.append(stringBuilder2);
         stringBuilder3.append("DEVICE: ");
-        stringBuilder3.append(Build.DEVICE);
+        stringBuilder3.append("gtanotexlwifichn");
         stringBuilder3.append("\n");
         stringBuilder2 = stringBuilder3.toString();
         stringBuilder3 = new StringBuilder();
         stringBuilder3.append(stringBuilder2);
         stringBuilder3.append("DISPLAY: ");
-        stringBuilder3.append(Build.DISPLAY);
+        stringBuilder3.append("NRD90M.P583ZCU2BRH1_B2BF");
         stringBuilder3.append("\n");
         stringBuilder2 = stringBuilder3.toString();
         stringBuilder3 = new StringBuilder();
         stringBuilder3.append(stringBuilder2);
         stringBuilder3.append("FINGERPRINT: ");
-        stringBuilder3.append(Build.FINGERPRINT);
+        stringBuilder3.append("samsung/gtanotexlwifizc/gtanotexlwifichn:7.0/NRD90M/P583ZCU2BRH1_B2BF:user/release-keys");
         stringBuilder3.append("\n");
         stringBuilder2 = stringBuilder3.toString();
         stringBuilder3 = new StringBuilder();
@@ -301,7 +301,7 @@ public class HardwareInfoDTSDAO {
         stringBuilder.append(String.valueOf(displayMetrics.heightPixels));
         stringBuilder.append("\n");
         stringBuilder2 = stringBuilder.toString();
-        stringBuilder4 = calculateMD5(new File("/system/framework/services.jar"));
+        stringBuilder4 = "49b5385e9223ef1ea4e864cde1723177";
         if (stringBuilder4 != null) {
             stringBuilder5 = new StringBuilder();
             stringBuilder5.append(stringBuilder2);
@@ -310,7 +310,7 @@ public class HardwareInfoDTSDAO {
             stringBuilder5.append("\n");
             stringBuilder2 = stringBuilder5.toString();
         }
-        stringBuilder4 = calculateMD5(new File("/system/framework/framework.jar"));
+        stringBuilder4 = "ea94f1a0bc309b31c49f7664ba878789";
         if (stringBuilder4 != null) {
             stringBuilder5 = new StringBuilder();
             stringBuilder5.append(stringBuilder2);
