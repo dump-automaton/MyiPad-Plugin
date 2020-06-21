@@ -13,30 +13,35 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
     @Override
-    public void handleLoadPackage(LoadPackageParam lpparam) throws Exception{
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
+        // app load时调用
+        // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
-            //XposedBridge.log("[HookMyiPad]Loaded App:" + lpparam.packageName);
-            final Class clazz = lpparam.classLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-            //XposedBridge.log("[HookMyiPad]Hooked Class: " + clazz.getName());
 
+            // 加载app的指定类
+            final Class clazz = lpparam.classLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+
+            // getDeclaredMethods()应该是返回包含此类中所有方法的数组，遍历此数组
             for (Method m : clazz.getDeclaredMethods()) {
-                //XposedBridge.log("[HookMyiPad]Method: " + m.getReturnType().getName() + " " + m.getName());
                 Log.e("[HookMyiPad]","Method: " + m.getReturnType().getName() + " " + m.getName());
 
-                // Check method name
+                // 匹配遍历到的方法名称
                 if (m.getName().contains("getHardwareInfo")) {
-                    //XposedBridge.log("[HookMyiPad]GOT METHOD: " + clazz.getName() + " - " + m.getName());
                     Log.e("[HookMyiPad]","GOT METHOD: " + clazz.getName() + " - " + m.getName());
 
                     XposedBridge.hookMethod(m, new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) {
+                            // 在方法结束时拦截，并执行此处代码
+
                             XposedBridge.log("[HookMyiPad]HOOKED METHOD: " + param.method.toString());
                             Log.e("Xposed","HOOKED :" + param.thisObject);
                             //Context context = (Context) AndroidAppHelper.currentApplication();
                             //Toast.makeText(context, param.thisObject.toString(), Toast.LENGTH_LONG);
                             String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
                             XposedBridge.log(str);
+
+                            // 设定返回值
                             param.setResult(str);
                         }
                     });
