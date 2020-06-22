@@ -41,27 +41,24 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
-        // getDeclaredMethods()应该是返回包含此类中所有方法的数组，遍历此数组
-        for (Method m : clazz.getDeclaredMethods()) {
-
-            // 匹配遍历到的方法名称
-            if (m.getName().contains("getHardwareInfo")) {
-                Log.e("[HookMyiPad]", "GOT METHOD: " + clazz.getName() + " - " + m.getName());
-                Toast.makeText(context, "Got method: " + clazz.getName() + " - " + m.getName(), Toast.LENGTH_LONG).show();
-                XposedBridge.hookMethod(m, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        // 在方法结束时拦截，并执行此处代码
-                        //Context context = (Context) AndroidAppHelper.currentApplication();
-                        Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
-                        //String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                        //XposedBridge.log(str);
-
-                        // 设定返回值
-                        param.setResult("\n");
-                    }
-                });
+        Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+        XposedBridge.hookMethod(m, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
+                param.setResult("\n");
             }
-        }
+        });
+
+        // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
+        /*
+        XposedHelpers.findAndHookMethod(clazz, "getHardwareInfo", String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Toast.makeText((Context) param.args[0], "Result replaced", Toast.LENGTH_LONG).show();
+                param.setResult("\n");
+            }
+        });
+         */
     }
 }
