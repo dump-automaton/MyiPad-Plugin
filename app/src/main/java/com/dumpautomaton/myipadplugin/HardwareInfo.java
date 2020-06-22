@@ -462,7 +462,7 @@ public class HardwareInfo {
  */
 
 
-    private static String getSign(Context context) {
+    static String getSign(Context context) {
         try {
             return context.getPackageManager().getPackageInfo(context.getPackageName(), 64).signatures[0].toCharsString();
         } catch (NameNotFoundException e) {

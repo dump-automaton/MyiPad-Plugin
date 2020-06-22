@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -46,7 +47,44 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
-                param.setResult("\n");
+                StringBuilder var2 = new StringBuilder();
+                Context var0 = (Context) param.args[0];
+                var2.append("PackageName: ");
+                var2.append(var0.getPackageName());
+                var2.append("\n");
+                String var8 = var2.toString();
+                String var4;
+                StringBuilder var10 = new StringBuilder();
+                var10.append(var8);
+                var10.append("ClientVersion: ");
+                var10.append(HardwareInfo.getVersionName(var0));
+                var10.append("\n");
+                var8 = var10.toString();
+                var10 = new StringBuilder();
+                var10.append(var8);
+                var10.append("ClientSign: ");
+                var10.append(HardwareInfo.getSign(var0));
+                var10.append("\n");
+                String var3 = var10.toString();
+                var2 = new StringBuilder();
+                var2.append(var3);
+                var2.append("ClientPath: ");
+                var2.append(HardwareInfo.getFilePath(var0));
+                var2.append("\n");
+                var8 = var2.toString();
+                var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
+                if (var4 != null) {
+                    var10 = new StringBuilder();
+                    var10.append(var8);
+                    var10.append("ClientMD5: ");
+                    var10.append(var4);
+                    var10.append("\n");
+                    var4 = var10.toString();
+                } else {
+                    var4 = var8;
+                }
+
+                param.setResult(var4);
             }
         });
 
