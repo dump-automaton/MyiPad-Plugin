@@ -37,7 +37,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookHardwareInfo(ClassLoader realClassLoader, Context context) throws ClassNotFoundException {
+    private void hookHardwareInfo(ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
         Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -46,45 +46,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedBridge.hookMethod(m, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
-                StringBuilder var2 = new StringBuilder();
-                Context var0 = (Context) param.args[0];
-                var2.append("PackageName: ");
-                var2.append(var0.getPackageName());
-                var2.append("\n");
-                String var8 = var2.toString();
-                String var4;
-                StringBuilder var10 = new StringBuilder();
-                var10.append(var8);
-                var10.append("ClientVersion: ");
-                var10.append(HardwareInfo.getVersionName(var0));
-                var10.append("\n");
-                var8 = var10.toString();
-                var10 = new StringBuilder();
-                var10.append(var8);
-                var10.append("ClientSign: ");
-                var10.append(HardwareInfo.getSign(var0));
-                var10.append("\n");
-                String var3 = var10.toString();
-                var2 = new StringBuilder();
-                var2.append(var3);
-                var2.append("ClientPath: ");
-                var2.append(HardwareInfo.getFilePath(var0));
-                var2.append("\n");
-                var8 = var2.toString();
-                var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
-                if (var4 != null) {
-                    var10 = new StringBuilder();
-                    var10.append(var8);
-                    var10.append("ClientMD5: ");
-                    var10.append(var4);
-                    var10.append("\n");
-                    var4 = var10.toString();
-                } else {
-                    var4 = var8;
-                }
+                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
 
-                param.setResult(var4);
+                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                param.setResult(str);
             }
         });
 
@@ -98,5 +63,44 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
          */
+    }
+
+    private String getHardwareInfoWithoutHardware(Context var0) {
+        StringBuilder var2 = new StringBuilder();
+        var2.append("PackageName: ");
+        var2.append(var0.getPackageName());
+        var2.append("\n");
+        String var8 = var2.toString();
+        String var4;
+        StringBuilder var10 = new StringBuilder();
+        var10.append(var8);
+        var10.append("ClientVersion: ");
+        var10.append(HardwareInfo.getVersionName(var0));
+        var10.append("\n");
+        var8 = var10.toString();
+        var10 = new StringBuilder();
+        var10.append(var8);
+        var10.append("ClientSign: ");
+        var10.append(HardwareInfo.getSign(var0));
+        var10.append("\n");
+        String var3 = var10.toString();
+        var2 = new StringBuilder();
+        var2.append(var3);
+        var2.append("ClientPath: ");
+        var2.append(HardwareInfo.getFilePath(var0));
+        var2.append("\n");
+        var8 = var2.toString();
+        var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
+        if (var4 != null) {
+            var10 = new StringBuilder();
+            var10.append(var8);
+            var10.append("ClientMD5: ");
+            var10.append(var4);
+            var10.append("\n");
+            var4 = var10.toString();
+        } else {
+            var4 = var8;
+        }
+        return var4;
     }
 }
