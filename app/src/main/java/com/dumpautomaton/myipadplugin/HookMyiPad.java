@@ -37,7 +37,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                             XposedBridge.log("[HookMyiPad]HOOKED METHOD: " + param.method.toString());
                             Log.e("Xposed","HOOKED :" + param.thisObject);
                             //Context context = (Context) AndroidAppHelper.currentApplication();
-                            //Toast.makeText(context, param.thisObject.toString(), Toast.LENGTH_LONG);
+                            Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
                             String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
                             XposedBridge.log(str);
 
