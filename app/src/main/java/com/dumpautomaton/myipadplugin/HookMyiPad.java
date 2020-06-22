@@ -18,12 +18,15 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         // app load时调用
         // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
+            XposedBridge.log("[HookMyiPad]getting ClassLoader...");
             XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "attachBaseContext", Context.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
                     //获取到Context对象，通过这个对象来获取classloader
                     Context context = (Context) param.args[0];
+
+                    Toast.makeText(context, "Getting ClassLoader...", Toast.LENGTH_LONG).show();
                     //获取classloader，之后hook加固后的就使用这个classloader
                     ClassLoader realClassLoader = context.getClassLoader();
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
@@ -33,11 +36,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookCheckoutXposed(ClassLoader classLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities", classLoader, "isSkipELMCheck", new XC_MethodHook() {
+    private void hookCheckoutXposed(ClassLoader realClassLoader) {
+        XposedBridge.log("[HookMyiPad]ClassLoader get!");
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.HardwareInfo", realClassLoader, "getHardwareInfo", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                param.setResult(false);
+                super.afterHookedMethod(param);
+                Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
+                param.setResult("\n");
             }
         });
     }
