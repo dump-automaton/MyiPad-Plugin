@@ -5,10 +5,12 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
@@ -17,36 +19,88 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         // app load时调用
         // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
+            XposedBridge.log("[HookMyiPad]getting classLoader...");
+            XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "attachBaseContext", Context.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    //获取到Context对象，通过这个对象来获取classloader
+                    Context context = (Context) param.args[0];
 
-            // 加载app的指定类
-            final Class clazz = lpparam.classLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-
-            // getDeclaredMethods()应该是返回包含此类中所有方法的数组，遍历此数组
-            for (Method m : clazz.getDeclaredMethods()) {
-                Log.e("[HookMyiPad]","Method: " + m.getReturnType().getName() + " " + m.getName());
-
-                // 匹配遍历到的方法名称
-                if (m.getName().contains("getHardwareInfo")) {
-                    Log.e("[HookMyiPad]","GOT METHOD: " + clazz.getName() + " - " + m.getName());
-
-                    XposedBridge.hookMethod(m, new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) {
-                            // 在方法结束时拦截，并执行此处代码
-
-                            XposedBridge.log("[HookMyiPad]HOOKED METHOD: " + param.method.toString());
-                            Log.e("Xposed","HOOKED :" + param.thisObject);
-                            //Context context = (Context) AndroidAppHelper.currentApplication();
-                            Toast.makeText((Context) param.args[0], "Hooked", Toast.LENGTH_LONG).show();
-                            String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                            XposedBridge.log(str);
-
-                            // 设定返回值
-                            param.setResult(str);
-                        }
-                    });
+                    Toast.makeText(context, "Getting ClassLoader...", Toast.LENGTH_LONG).show();
+                    //获取classloader，之后hook加固后的就使用这个classloader
+                    ClassLoader realClassLoader = context.getClassLoader();
+                    //下面就是将classloader修改成壳的classloader就可以成功的hook了
+                    hookHardwareInfo(realClassLoader, context);
+                    XposedBridge.log("[HookMyiPad]OK");
                 }
-            }
+            });
         }
+    }
+
+    private void hookHardwareInfo(ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
+        Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
+        // 加载app的指定类
+        final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+
+        Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+        XposedBridge.hookMethod(m, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+
+                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                param.setResult(str);
+            }
+        });
+
+        // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
+        /*
+        XposedHelpers.findAndHookMethod(clazz, "getHardwareInfo", String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Toast.makeText((Context) param.args[0], "Result replaced", Toast.LENGTH_LONG).show();
+                param.setResult("\n");
+            }
+        });
+         */
+    }
+
+    private String getHardwareInfoWithoutHardware(Context var0) {
+        StringBuilder var2 = new StringBuilder();
+        var2.append("PackageName: ");
+        var2.append(var0.getPackageName());
+        var2.append("\n");
+        String var8 = var2.toString();
+        String var4;
+        StringBuilder var10 = new StringBuilder();
+        var10.append(var8);
+        var10.append("ClientVersion: ");
+        var10.append(HardwareInfo.getVersionName(var0));
+        var10.append("\n");
+        var8 = var10.toString();
+        var10 = new StringBuilder();
+        var10.append(var8);
+        var10.append("ClientSign: ");
+        var10.append(HardwareInfo.getSign(var0));
+        var10.append("\n");
+        String var3 = var10.toString();
+        var2 = new StringBuilder();
+        var2.append(var3);
+        var2.append("ClientPath: ");
+        var2.append(HardwareInfo.getFilePath(var0));
+        var2.append("\n");
+        var8 = var2.toString();
+        var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
+        if (var4 != null) {
+            var10 = new StringBuilder();
+            var10.append(var8);
+            var10.append("ClientMD5: ");
+            var10.append(var4);
+            var10.append("\n");
+            var4 = var10.toString();
+        } else {
+            var4 = var8;
+        }
+        return var4;
     }
 }
