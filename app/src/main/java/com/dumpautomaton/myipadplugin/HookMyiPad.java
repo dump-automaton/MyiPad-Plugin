@@ -53,6 +53,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2",
+                realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(0);
+                    }
+        });
+
         // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
         /*
         XposedHelpers.findAndHookMethod(clazz, "getHardwareInfo", String.class, new XC_MethodHook() {
