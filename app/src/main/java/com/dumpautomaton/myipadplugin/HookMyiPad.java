@@ -3,10 +3,14 @@ package com.dumpautomaton.myipadplugin;
 import android.app.AndroidAppHelper;
 import android.content.Context;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -59,7 +63,25 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         param.setResult(0);
                     }
-        });
+                }
+        );
+
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2",
+                realClassLoader, "setTextView", TextView.class, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                        if (param.args[0] != null) {
+                            Timer timer = new Timer();// 实例化Timer类
+                            timer.schedule(new TimerTask() {
+                                public void run() {
+                                    TextView textView = (TextView) param.args[0];
+                                    textView.setText("Auto update has been disabled");
+                                }
+                            }, 1000);// 这里百毫秒
+                        }
+                    }
+                }
+        );
 
         // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
         /*
