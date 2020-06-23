@@ -41,7 +41,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookHardwareInfo(ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
+    private void hookHardwareInfo(final ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
         Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -57,42 +57,31 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2",
-                realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        param.setResult(0);
-                    }
-                }
-        );
-
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2",
-                realClassLoader, "setTextView", TextView.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                        if (param.args[0] != null) {
-                            Timer timer = new Timer();// 实例化Timer类
-                            timer.schedule(new TimerTask() {
-                                public void run() {
-                                    TextView textView = (TextView) param.args[0];
-                                    textView.setText("Auto update has been disabled");
-                                }
-                            }, 1000);// 这里百毫秒
-                        }
-                    }
-                }
-        );
-
-        // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
-        /*
-        XposedHelpers.findAndHookMethod(clazz, "getHardwareInfo", String.class, new XC_MethodHook() {
+        final TextView[] textView = new TextView[1];
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "setTextView", TextView.class, new XC_MethodHook() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Toast.makeText((Context) param.args[0], "Result replaced", Toast.LENGTH_LONG).show();
-                param.setResult("\n");
+            protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                textView[0] = (TextView) param.args[0];
             }
         });
-         */
+
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if ((int) param.getResult() == 1) {
+                    final String newVersionName = (String) param.args[1];
+                    Timer timer = new Timer();// 实例化Timer类
+                    timer.schedule(new TimerTask() {
+                        public void run() {
+                            if (textView[0] != null) {
+                                textView[0].setText("New version: " + newVersionName);
+                            }
+                        }
+                    }, 500);// 毫秒
+                }
+                param.setResult(0);
+            }
+        });
     }
 
     private String getHardwareInfoWithoutHardware(Context var0) {
