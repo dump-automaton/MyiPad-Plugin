@@ -35,13 +35,15 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = context.getClassLoader();
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
                     hookHardwareInfo(realClassLoader, context);
+                    hookAutoUpdate(realClassLoader);
+
                     XposedBridge.log("[HookMyiPad]OK");
                 }
             });
         }
     }
 
-    private void hookHardwareInfo(final ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
+    private void hookHardwareInfo(ClassLoader realClassLoader, Context context) throws ClassNotFoundException {
         Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -56,12 +58,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 param.setResult(str);
             }
         });
+    }
 
-        final TextView[] textView = new TextView[1];
+    private void hookAutoUpdate(ClassLoader realClassLoader) {
+        final TextView[] versionStatusTextView = new TextView[1];
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "setTextView", TextView.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                textView[0] = (TextView) param.args[0];
+                versionStatusTextView[0] = (TextView) param.args[0];
             }
         });
 
@@ -73,8 +77,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     Timer timer = new Timer();// 实例化Timer类
                     timer.schedule(new TimerTask() {
                         public void run() {
-                            if (textView[0] != null) {
-                                textView[0].setText("New version: " + newVersionName);
+                            if (versionStatusTextView[0] != null) {
+                                versionStatusTextView[0].setText("New version: " + newVersionName);
                             }
                         }
                     }, 500);// 毫秒
