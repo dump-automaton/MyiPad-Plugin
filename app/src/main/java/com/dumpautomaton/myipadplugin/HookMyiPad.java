@@ -61,28 +61,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookAutoUpdate(ClassLoader realClassLoader) {
-        final TextView[] versionStatusTextView = new TextView[1];
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "setTextView", TextView.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                versionStatusTextView[0] = (TextView) param.args[0];
-            }
-        });
-
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if ((int) param.getResult() == 1) {
-                    final String newVersionName = (String) param.args[1];
-                    Timer timer = new Timer();// 实例化Timer类
-                    timer.schedule(new TimerTask() {
-                        public void run() {
-                            if (versionStatusTextView[0] != null) {
-                                versionStatusTextView[0].setText("New version: " + newVersionName);
-                            }
-                        }
-                    }, 500);// 毫秒
-                }
                 param.setResult(0);
             }
         });
