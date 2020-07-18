@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="hardware_info_profile_names">
+        <item>P350</item>
+        <item>Minimized hard-coded information(5.2.3.52303)</item>
+    </string-array>
+
+    <string-array name="hardware_info_profile_values">
+        <item>p350</item>
+        <item>min_5.2.3.52303</item>
+    </string-array>
+</resources>

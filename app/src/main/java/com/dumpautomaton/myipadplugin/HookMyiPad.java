@@ -12,12 +12,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-public class HookMyiPad implements IXposedHookLoadPackage {
+public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit {
+    static XSharedPreferences pluginPreferences;
+
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         // app load时调用
@@ -34,8 +38,12 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     //获取classloader，之后hook加固后的就使用这个classloader
                     ClassLoader realClassLoader = context.getClassLoader();
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
-                    hookHardwareInfo(realClassLoader, context);
-                    hookAutoUpdate(realClassLoader);
+                    if (pluginPreferences.getBoolean("skip_hardware_certification", true)) {
+                        hookHardwareInfo(realClassLoader, context);
+                    }
+                    if (pluginPreferences.getBoolean("disable_auto_update", true)) {
+                        hookAutoUpdate(realClassLoader);
+                    }
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -106,5 +114,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             var4 = var8;
         }
         return var4;
+    }
+
+    @Override
+    public void initZygote(StartupParam startupParam) throws Throwable {
+        pluginPreferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
     }
 }
