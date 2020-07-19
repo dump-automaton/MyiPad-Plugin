@@ -2,6 +2,8 @@ package com.dumpautomaton.myipadplugin;
 
 import android.app.AndroidAppHelper;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,12 +40,8 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     //获取classloader，之后hook加固后的就使用这个classloader
                     ClassLoader realClassLoader = context.getClassLoader();
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
-                    if (pluginPreferences.getBoolean("skip_hardware_certification", true)) {
-                        hookHardwareInfo(realClassLoader, context);
-                    }
-                    if (pluginPreferences.getBoolean("disable_auto_update", true)) {
-                        hookAutoUpdate(realClassLoader);
-                    }
+                    hookHardwareInfo(realClassLoader, context);
+                    hookAutoUpdate(realClassLoader);
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -62,8 +60,10 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
 
-                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                param.setResult(str);
+                if (pluginPreferences.getBoolean("skip_hardware_certification", false)) {
+                    String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                    param.setResult(str);
+                }
             }
         });
     }
@@ -72,7 +72,9 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                param.setResult(0);
+                if (pluginPreferences.getBoolean("disable_auto_update", false)) {
+                    param.setResult(0);
+                }
             }
         });
     }
@@ -118,6 +120,13 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
-        pluginPreferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            File prefsFileProt =
+                    new File("/data/user_de/0/com.dumpautomaton.myipadplugin/shared_prefs/com.dumpautomaton.myipadplugin_preferences.xml");
+            pluginPreferences = new XSharedPreferences(prefsFileProt);
+        } else {
+            pluginPreferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
+        }
+
     }
 }
