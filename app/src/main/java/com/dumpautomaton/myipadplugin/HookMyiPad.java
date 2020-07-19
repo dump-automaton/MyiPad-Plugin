@@ -120,7 +120,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             var10 = new StringBuilder();
             var10.append(var8);
             var10.append("ClientMD5: ");
-            var10.append("d641121123578f86e519e5b422d9971e\n");
+            var10.append("d641121123578f86e519e5b422d9971e");
             var10.append("\n");
             var4 = var10.toString();
         } else {

@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <fragment
-        android:id="@+id/fragment"
+        android:id="@+id/preferences_fragment"
         android:name="com.dumpautomaton.myipadplugin.SettingsFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"

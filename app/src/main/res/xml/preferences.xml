@@ -7,16 +7,27 @@
         app:title="Skip hardware certification"
         app:defaultValue="true"/>
 
-    <SwitchPreferenceCompat
-        app:key="disable_auto_update"
-        app:title="Disable auto update"
-        app:defaultValue="true"/>
-
     <ListPreference
         app:key="pref_hardware_info"
         app:title="Select the hardware info profile"
         app:entries="@array/hardware_info_profile_names"
         app:entryValues="@array/hardware_info_profile_values"
         app:defaultValue="p350"/>
+
+    <SwitchPreferenceCompat
+        app:key="disable_auto_update"
+        app:title="Disable auto update"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="enable_hot_application_mode"
+        app:title="Enable hot application mode"
+        app:summary="Apply settings without restarting the device. If you encounter any exceptions, please consider disabling it."
+        app:defaultValue="true"/>
+
+    <Preference
+        app:key="apply_changes"
+        app:title="Apply changes"
+        app:dependency="enable_hot_application_mode"/>
 
 </PreferenceScreen>
