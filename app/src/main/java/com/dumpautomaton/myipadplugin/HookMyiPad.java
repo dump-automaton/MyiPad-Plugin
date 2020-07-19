@@ -23,6 +23,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     static XSharedPreferences pluginPreferences;
+    static boolean applyChangesInstantly = false;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -50,7 +51,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private void hookHardwareInfo(ClassLoader realClassLoader, Context context) throws ClassNotFoundException {
-        Toast.makeText(context, pluginPreferences.getString("pref_hardware_info", "0"), Toast.LENGTH_LONG).show();
+        Toast.makeText(context, getPreferencesString("pref_hardware_info"), Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
@@ -60,8 +61,8 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
 
-                if (pluginPreferences.getBoolean("skip_hardware_certification", false)) {
-                    String pref = pluginPreferences.getString("pref_hardware_info", "0");
+                if (getPreferencesBoolean("skip_hardware_certification")) {
+                    String pref = getPreferencesString("pref_hardware_info");
                     String res = "";
                     if (pref.equals("p350")) {
                         res = HardwareInfo.getHardwareInfo((Context) param.args[0]);
@@ -78,7 +79,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (pluginPreferences.getBoolean("disable_auto_update", false)) {
+                if (getPreferencesBoolean("disable_auto_update")) {
                     param.setResult(0);
                 }
             }
@@ -129,6 +130,20 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         return var4;
     }
 
+    private boolean getPreferencesBoolean(String key) {
+        if (applyChangesInstantly) {
+            pluginPreferences.reload();
+        }
+        return pluginPreferences.getBoolean(key, false);
+    }
+
+    private String getPreferencesString(String key) {
+        if (applyChangesInstantly) {
+            pluginPreferences.reload();
+        }
+        return pluginPreferences.getString(key, "0");
+    }
+
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -139,5 +154,9 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             pluginPreferences = new XSharedPreferences(BuildConfig.APPLICATION_ID);
         }
 
+        if (pluginPreferences.getBoolean("enable_apply_changes_instantly", false)) {
+            XposedBridge.log("[HookMyiPad]Apply changes instantly enabled");
+            applyChangesInstantly = true;
+        }
     }
 }

@@ -20,14 +20,14 @@
         app:defaultValue="true"/>
 
     <SwitchPreferenceCompat
-        app:key="enable_hot_application_mode"
-        app:title="Enable hot application mode"
+        app:key="enable_apply_changes_instantly"
+        app:title="Apply changes instantly"
         app:summary="Apply settings without restarting the device. If you encounter any exceptions, please consider disabling it."
         app:defaultValue="true"/>
 
     <Preference
         app:key="apply_changes"
         app:title="Apply changes"
-        app:dependency="enable_hot_application_mode"/>
+        app:dependency="enable_apply_changes_instantly"/>
 
 </PreferenceScreen>
