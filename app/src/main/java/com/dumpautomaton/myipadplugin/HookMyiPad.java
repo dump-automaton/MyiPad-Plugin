@@ -50,7 +50,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private void hookHardwareInfo(ClassLoader realClassLoader, Context context) throws ClassNotFoundException {
-        Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, pluginPreferences.getString("pref_hardware_info", "0"), Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
@@ -61,8 +61,14 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
 
                 if (pluginPreferences.getBoolean("skip_hardware_certification", false)) {
-                    String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                    param.setResult(str);
+                    String pref = pluginPreferences.getString("pref_hardware_info", "0");
+                    String res = "";
+                    if (pref.equals("p350")) {
+                        res = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                    } else if (pref.equals("min_5.2.3.52303")) {
+                        res = getHardwareInfoWithoutHardware((Context) param.args[0]);
+                    }
+                    param.setResult(res);
                 }
             }
         });
@@ -82,26 +88,31 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
     private String getHardwareInfoWithoutHardware(Context var0) {
         StringBuilder var2 = new StringBuilder();
         var2.append("PackageName: ");
-        var2.append(var0.getPackageName());
+        var2.append("com.netspace.myipad");
         var2.append("\n");
         String var8 = var2.toString();
         String var4;
         StringBuilder var10 = new StringBuilder();
         var10.append(var8);
         var10.append("ClientVersion: ");
-        var10.append(HardwareInfo.getVersionName(var0));
+        var10.append("5.2.3.52303");
         var10.append("\n");
         var8 = var10.toString();
         var10 = new StringBuilder();
         var10.append(var8);
         var10.append("ClientSign: ");
-        var10.append(HardwareInfo.getSign(var0));
+        var10.append("308203253082020da00302010202040966f52d300d06092a864886f70d01010b05003042310b300906035504061302434e310f300d060355040713064e696e67426f3122302006035504");
+        var10.append("0a13194e696e67426f2052756959694b654a6920436f2e204c74642e3020170d3132313231313130313133355a180f32303632313132393130313133355a3042310b300906035504061302434e310");
+        var10.append("f300d060355040713064e696e67426f31223020060355040a13194e696e67426f2052756959694b654a6920436f2e204c74642e30820122300d06092a864886f70d01010105000382010f003082010");
+        var10.append("a0282010100abf2c60e5fcb7776da3d22c3180e284da9c4e715cec2736646da086cbf979a7f74bc147167f0f32ef0c52458e9183f0dd9571d7971e49564c00fbfd30bef3ca9a2d52bffcd0142c72e10fac1");
+        var10.append("58cb62c7bc7e9e17381a555ad7d39a24a470584a0e6aafdce2e4d6877847b15cbf4de89e3e4e71b11dca9920843ccc055acf8781db29bdaf3f06e16f055bf579a35ae3adb4d1149f8d43d90add54596a");
+        var10.append("cef8e4a28905f9f19fc0aa7fda9e8d56aa63db5d8d5e0fc4c536629f0a25a44429c699318329af6a3e869dd5e8289c78f5");
         var10.append("\n");
         String var3 = var10.toString();
         var2 = new StringBuilder();
         var2.append(var3);
         var2.append("ClientPath: ");
-        var2.append(HardwareInfo.getFilePath(var0));
+        var2.append("/data/app/com.netspace.myipad/base.apk");
         var2.append("\n");
         var8 = var2.toString();
         var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
@@ -109,7 +120,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             var10 = new StringBuilder();
             var10.append(var8);
             var10.append("ClientMD5: ");
-            var10.append(var4);
+            var10.append("d641121123578f86e519e5b422d9971e\n");
             var10.append("\n");
             var4 = var10.toString();
         } else {
