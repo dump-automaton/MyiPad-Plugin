@@ -8,10 +8,10 @@ import androidx.preference.PreferenceFragmentCompat;
 public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setPreferencesFromResource(R.xml.preferences, rootKey);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             getPreferenceManager().setStorageDeviceProtected();
         }
+        
+        setPreferencesFromResource(R.xml.preferences, rootKey);
     }
 }
