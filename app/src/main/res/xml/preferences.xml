@@ -15,6 +15,11 @@
         app:defaultValue="p350"/>
 
     <SwitchPreferenceCompat
+        app:key="skip_elm"
+        app:title="Skip elm activation"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
         app:key="disable_auto_update"
         app:title="Disable auto update"
         app:defaultValue="true"/>

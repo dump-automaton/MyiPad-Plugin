@@ -43,6 +43,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
                     hookHardwareInfo(realClassLoader, context);
                     hookAutoUpdate(realClassLoader);
+                    hookELMActivation(realClassLoader);
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -81,6 +82,20 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if (getPreferencesBoolean("disable_auto_update")) {
                     param.setResult(0);
+                }
+            }
+        });
+    }
+
+    private void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
+        Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
+
+        XposedBridge.hookMethod(m, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("skip_elm")) {
+                    param.setResult(true);
                 }
             }
         });
