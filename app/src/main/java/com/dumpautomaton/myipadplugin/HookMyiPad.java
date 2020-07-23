@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,6 +46,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     hookAutoUpdate(realClassLoader);
                     hookELMActivation(realClassLoader);
                     hookRootAccess(realClassLoader);
+                    hookScreenCapture(realClassLoader);
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -128,6 +130,31 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 if (getPreferencesBoolean("block_root_access_requests")) {
                     param.setResult(true);
+                }
+            }
+        });
+    }
+
+    private void hookScreenCapture(ClassLoader realClassLoader) throws ClassNotFoundException {
+        XposedHelpers.findAndHookMethod("com.netspace.library.application.MyiBaseApplication", realClassLoader, "askMediaProjectPermission", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("block_screen_capture")) {
+                    Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
+                    f.setBoolean(param.thisObject, false);
+
+                    param.setResult(null);
+                }
+            }
+        });
+        XposedHelpers.findAndHookMethod("com.netspace.library.application.MyiBaseApplication", realClassLoader, "onMediaProjectAskResult", "com.netspace.library.activity.MediaProjectPermissionAskActivity.MediaProjectAskResult", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("block_screen_capture")) {
+                    Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
+                    f.setBoolean(param.thisObject, false);
+
+                    param.setResult(null);
                 }
             }
         });
