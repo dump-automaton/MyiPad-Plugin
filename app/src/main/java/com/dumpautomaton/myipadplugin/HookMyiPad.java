@@ -103,52 +103,6 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private void hookRootAccess(ClassLoader realClassLoader) throws ClassNotFoundException {
-        XposedHelpers.findAndHookMethod("com.netspace.myipad.plugins.root.RootPlugin", realClassLoader, "initModule", Context.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(false);
-                }
-            }
-        });
-
-        Class clazz = realClassLoader.loadClass("com.netspace.library.application.MyiBaseApplication");
-        Method m = XposedHelpers.findMethodExact(clazz, "canExecuteIPTableScript");
-        XposedBridge.hookMethod(m, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(false);
-                }
-            }
-        });
-
-        XposedHelpers.findAndHookMethod("com.netspace.library.parser.ServerConfigurationParser", realClassLoader, "executeScripts", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(true);
-                }
-            }
-        });
-        XposedHelpers.findAndHookMethod("com.netspace.library.parser.ServerConfigurationParser", realClassLoader,
-                "executeScripts", "com.netspace.library.parser.ServerConfigurationParser.ExecuteScriptCallBack", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(true);
-                }
-            }
-        });
-        XposedHelpers.findAndHookMethod("com.netspace.library.parser.ServerConfigurationParser", realClassLoader, "executeScripts", boolean.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(true);
-                }
-            }
-        });
-
         Class clazz2 = realClassLoader.loadClass("com.stericson.RootTools.RootTools");
         Method m2 = XposedHelpers.findMethodExact(clazz2, "isRootAvailable");
         XposedBridge.hookMethod(m2, new XC_MethodHook() {
