@@ -44,6 +44,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     hookHardwareInfo(realClassLoader, context);
                     hookAutoUpdate(realClassLoader);
                     hookELMActivation(realClassLoader);
+                    hookRootAccess(realClassLoader);
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -95,6 +96,37 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 if (getPreferencesBoolean("skip_elm")) {
+                    param.setResult(true);
+                }
+            }
+        });
+    }
+
+    private void hookRootAccess(ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class clazz2 = realClassLoader.loadClass("com.stericson.RootTools.RootTools");
+        Method m2 = XposedHelpers.findMethodExact(clazz2, "isRootAvailable");
+        XposedBridge.hookMethod(m2, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("block_root_access_requests")) {
+                    param.setResult(false);
+                }
+            }
+        });
+        Method m3 = XposedHelpers.findMethodExact(clazz2, "isAccessGiven");
+        XposedBridge.hookMethod(m3, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("block_root_access_requests")) {
+                    param.setResult(false);
+                }
+            }
+        });
+
+        XposedHelpers.findAndHookMethod("com.eclipsesource.v8.V8", realClassLoader, "_executeScript", long.class, int.class, String.class, String.class, int.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (getPreferencesBoolean("block_root_access_requests")) {
                     param.setResult(true);
                 }
             }
