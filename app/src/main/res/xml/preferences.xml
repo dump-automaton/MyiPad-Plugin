@@ -2,6 +2,9 @@
 <PreferenceScreen
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory
+        app:title="MyiPad Tweaks"/>
+
     <SwitchPreferenceCompat
         app:key="skip_hardware_certification"
         app:title="Skip hardware certification"
@@ -33,6 +36,9 @@
         app:key="block_screen_capture"
         app:title="Block screen capture"
         app:defaultValue="true"/>
+
+    <PreferenceCategory
+        app:title="Plugin Settings"/>
 
     <SwitchPreferenceCompat
         app:key="enable_apply_changes_instantly"
