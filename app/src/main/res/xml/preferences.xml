@@ -20,8 +20,8 @@
         app:defaultValue="true"/>
 
     <SwitchPreferenceCompat
-        app:key="disable_auto_update"
-        app:title="Disable auto update"
+        app:key="block_auto_update"
+        app:title="Block auto update"
         app:defaultValue="true"/>
 
     <SwitchPreferenceCompat

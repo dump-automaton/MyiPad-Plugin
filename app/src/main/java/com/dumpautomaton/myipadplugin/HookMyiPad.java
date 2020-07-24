@@ -1,18 +1,12 @@
 package com.dumpautomaton.myipadplugin;
 
-import android.app.AndroidAppHelper;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -24,7 +18,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     static XSharedPreferences pluginPreferences;
-    static boolean applyChangesInstantly = false;
+    static boolean isApplyChangesInstantlyEnabled = false;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -44,7 +38,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                         String profile = getPreferencesString("pref_hardware_info");
                         hookHardwareInfo(realClassLoader, context, profile);
                     }
-                    if (getPreferencesBoolean("disable_auto_update")) {
+                    if (getPreferencesBoolean("block_auto_update")) {
                         hookAutoUpdate(realClassLoader);
                     }
                     if (getPreferencesBoolean("skip_elm")) {
@@ -188,14 +182,14 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private boolean getPreferencesBoolean(String key) {
-        if (applyChangesInstantly) {
+        if (isApplyChangesInstantlyEnabled) {
             pluginPreferences.reload();
         }
         return pluginPreferences.getBoolean(key, false);
     }
 
     private String getPreferencesString(String key) {
-        if (applyChangesInstantly) {
+        if (isApplyChangesInstantlyEnabled) {
             pluginPreferences.reload();
         }
         return pluginPreferences.getString(key, "0");
@@ -213,7 +207,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
         if (pluginPreferences.getBoolean("enable_apply_changes_instantly", false)) {
             XposedBridge.log("[HookMyiPad]Apply changes instantly enabled");
-            applyChangesInstantly = true;
+            isApplyChangesInstantlyEnabled = true;
         }
     }
 }
