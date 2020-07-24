@@ -37,16 +37,25 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     //获取到Context对象，通过这个对象来获取classloader
                     Context context = (Context) param.args[0];
-
-                    Toast.makeText(context, "Getting ClassLoader...", Toast.LENGTH_LONG).show();
                     //获取classloader，之后hook加固后的就使用这个classloader
                     ClassLoader realClassLoader = context.getClassLoader();
                     //下面就是将classloader修改成壳的classloader就可以成功的hook了
-                    hookHardwareInfo(realClassLoader, context);
-                    hookAutoUpdate(realClassLoader);
-                    hookELMActivation(realClassLoader);
-                    hookRootAccess(realClassLoader);
-                    hookScreenCapture(realClassLoader);
+                    if (getPreferencesBoolean("skip_hardware_certification")) {
+                        String profile = getPreferencesString("pref_hardware_info");
+                        hookHardwareInfo(realClassLoader, context, profile);
+                    }
+                    if (getPreferencesBoolean("disable_auto_update")) {
+                        hookAutoUpdate(realClassLoader);
+                    }
+                    if (getPreferencesBoolean("skip_elm")) {
+                        hookELMActivation(realClassLoader);
+                    }
+                    if (getPreferencesBoolean("block_root_access_requests")) {
+                        hookRootAccess(realClassLoader);
+                    }
+                    if (getPreferencesBoolean("block_screen_capture")) {
+                        hookScreenCapture(realClassLoader);
+                    }
 
                     XposedBridge.log("[HookMyiPad]OK");
                 }
@@ -54,7 +63,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         }
     }
 
-    private void hookHardwareInfo(ClassLoader realClassLoader, Context context) throws ClassNotFoundException {
+    private void hookHardwareInfo(ClassLoader realClassLoader, Context context, final String profile) throws ClassNotFoundException {
         Toast.makeText(context, getPreferencesString("pref_hardware_info"), Toast.LENGTH_LONG).show();
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -65,16 +74,13 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
 
-                if (getPreferencesBoolean("skip_hardware_certification")) {
-                    String pref = getPreferencesString("pref_hardware_info");
-                    String res = "";
-                    if (pref.equals("p350")) {
-                        res = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                    } else if (pref.equals("min_5.2.3.52303")) {
-                        res = getHardwareInfoWithoutHardware((Context) param.args[0]);
-                    }
-                    param.setResult(res);
+                String result = "";
+                if (profile.equals("p350")) {
+                    result = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                } else if (profile.equals("min_5.2.3.52303")) {
+                    result = getHardwareInfoWithoutHardware((Context) param.args[0]);
                 }
+                param.setResult(result);
             }
         });
     }
@@ -83,9 +89,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("disable_auto_update")) {
-                    param.setResult(0);
-                }
+                param.setResult(0);
             }
         });
     }
@@ -97,9 +101,7 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedBridge.hookMethod(m, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("skip_elm")) {
-                    param.setResult(true);
-                }
+                param.setResult(true);
             }
         });
     }
@@ -110,27 +112,21 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedBridge.hookMethod(m2, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(false);
-                }
+                param.setResult(false);
             }
         });
         Method m3 = XposedHelpers.findMethodExact(clazz2, "isAccessGiven");
         XposedBridge.hookMethod(m3, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(false);
-                }
+                param.setResult(false);
             }
         });
 
         XposedHelpers.findAndHookMethod("com.eclipsesource.v8.V8", realClassLoader, "_executeScript", long.class, int.class, String.class, String.class, int.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_root_access_requests")) {
-                    param.setResult(true);
-                }
+                param.setResult(true);
             }
         });
     }
@@ -139,23 +135,19 @@ public class HookMyiPad implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XposedHelpers.findAndHookMethod("com.netspace.library.application.MyiBaseApplication", realClassLoader, "askMediaProjectPermission", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_screen_capture")) {
-                    Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
-                    f.setBoolean(param.thisObject, false);
+                Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
+                f.setBoolean(param.thisObject, false);
 
-                    param.setResult(null);
-                }
+                param.setResult(null);
             }
         });
         XposedHelpers.findAndHookMethod("com.netspace.library.application.MyiBaseApplication", realClassLoader, "onMediaProjectAskResult", "com.netspace.library.activity.MediaProjectPermissionAskActivity.MediaProjectAskResult", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (getPreferencesBoolean("block_screen_capture")) {
-                    Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
-                    f.setBoolean(param.thisObject, false);
+                Field f = XposedHelpers.findField(param.thisObject.getClass(), "mbMediaProjectSuccess");
+                f.setBoolean(param.thisObject, false);
 
-                    param.setResult(null);
-                }
+                param.setResult(null);
             }
         });
     }
