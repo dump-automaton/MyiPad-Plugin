@@ -1,6 +1,13 @@
 package com.dumpautomaton.myipadplugin;
 
+import android.os.Looper;
+
 import android.app.AndroidAppHelper;
+import android.app.Application;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,26 +26,23 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         // app load时调用
         // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
+            
             XposedBridge.log("[HookMyiPad]getting classLoader...");
-            XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "attachBaseContext", Context.class, new XC_MethodHook() {
+            XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
                 @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    //获取到Context对象，通过这个对象来获取classloader
-                    Context context = (Context) param.args[0];
-
-                    Toast.makeText(context, "Getting ClassLoader...", Toast.LENGTH_LONG).show();
-                    //获取classloader，之后hook加固后的就使用这个classloader
-                    ClassLoader realClassLoader = context.getClassLoader();
-                    //下面就是将classloader修改成壳的classloader就可以成功的hook了
-                    hookHardwareInfo(realClassLoader, context);
-                    XposedBridge.log("[HookMyiPad]OK");
+                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                    Application appClz = (Application) param.thisObject;
+                    ClassLoader realClassLoader = appClz.getClassLoader();
+                    
+                    hookWifiConfigActivity(realClassLoader);
+                    //hookHardwareInfo(realClassLoader);
                 }
             });
         }
     }
 
-    private void hookHardwareInfo(ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
-        Toast.makeText(context, "ClassLoader get!", Toast.LENGTH_LONG).show();
+    private void hookHardwareInfo(ClassLoader realClassLoader) throws ClassNotFoundException {
+        
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
@@ -52,17 +56,64 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 param.setResult(str);
             }
         });
-
-        // 由于getHardwareInfo是静态方法，这样hook可能会出现未知问题
-        /*
-        XposedHelpers.findAndHookMethod(clazz, "getHardwareInfo", String.class, new XC_MethodHook() {
+    }
+    
+    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Toast.makeText((Context) param.args[0], "Result replaced", Toast.LENGTH_LONG).show();
-                param.setResult("\n");
+                final Activity activity = (Activity) param.thisObject;
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(activity, "Hooking HW auth!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                
+                new Thread() {
+                    public void run() {
+                        Looper.prepare();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        builder.setTitle("Plugin");
+                        builder.setMessage("Skip HW Authentication?");
+                        //点击对话框以外的区域是否让对话框消失
+                        builder.setCancelable(true);
+                        //设置正面按钮
+                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(activity, "Hooking...", Toast.LENGTH_SHORT).show();
+                                
+                                // Hook getHardwareInfo()
+                                try {
+                                    final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+                                    Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+                                    XposedBridge.hookMethod(m, new XC_MethodHook() {
+                                            @Override
+                                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+                                                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                                                param.setResult(str);
+                                            }
+                                        });
+                                } catch (Exception e) {
+                                    Toast.makeText(activity, "Hook failed!", Toast.LENGTH_SHORT).show();
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        
+                        builder.create().show();
+                        Looper.loop();
+                    }
+                }.start();
             }
         });
-         */
     }
 
     private String getHardwareInfoWithoutHardware(Context var0) {
