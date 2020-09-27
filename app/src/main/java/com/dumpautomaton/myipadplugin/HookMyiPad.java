@@ -26,7 +26,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         // app load时调用
         // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
-            
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
                 @Override
@@ -42,7 +41,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookHardwareInfo(ClassLoader realClassLoader) throws ClassNotFoundException {
-        
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
@@ -63,11 +61,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = (Activity) param.thisObject;
-                activity.runOnUiThread(new Runnable() {
-                    public void run() {
-                        Toast.makeText(activity, "Hooking HW auth!", Toast.LENGTH_LONG).show();
-                    }
-                });
                 
                 new Thread() {
                     public void run() {
@@ -81,8 +74,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(activity, "Hooking...", Toast.LENGTH_SHORT).show();
-                                
                                 // Hook getHardwareInfo()
                                 try {
                                     final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -96,7 +87,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                                             }
                                         });
                                 } catch (Exception e) {
-                                    Toast.makeText(activity, "Hook failed!", Toast.LENGTH_SHORT).show();
+                                    activity.runOnUiThread(new Runnable() {
+                                        public void run() {
+                                            Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                                 }
                                 dialog.dismiss();
                             }
