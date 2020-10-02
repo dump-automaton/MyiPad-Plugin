@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -33,12 +34,21 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     Application appClz = (Application) param.thisObject;
                     ClassLoader realClassLoader = appClz.getClassLoader();
                     
-                    hookWifiConfigActivity(realClassLoader);
-                    //hookHardwareInfo(realClassLoader);
+					hookNewActivity(realClassLoader);
+                    //hookWifiConfigActivity(realClassLoader);
+                    hookHardwareInfo(realClassLoader);
                 }
             });
         }
     }
+	
+	private void hookNewActivity(ClassLoader realClassLoader) throws ClassNotFoundException {
+		Class<?> instrumentationClass = XposedHelpers.findClass("android.app.Instrumentation", realClassLoader);
+		Method method = XposedHelpers.findMethodExact(instrumentationClass, "newActivity",
+												 ClassLoader.class, String.class, Intent.class);
+		
+		XposedBridge.hookMethod(method, new ActivityHook());
+	}
 
     private void hookHardwareInfo(ClassLoader realClassLoader) throws ClassNotFoundException {
         // 加载app的指定类
@@ -47,11 +57,37 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
         XposedBridge.hookMethod(m, new XC_MethodHook() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+            protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+				ActivityHook.getCurrentActivity().runOnUiThread(new Runnable() {
+						public void run() {
+							Toast.makeText(ActivityHook.getCurrentActivity(), "Hooked!", Toast.LENGTH_LONG).show();
+						}
+					});
+				
+                Looper.prepare();
+				AlertDialog.Builder builder = new AlertDialog.Builder(ActivityHook.getCurrentActivity());
+				builder.setTitle("Plugin");
+				builder.setMessage("Skip HW Authentication?");
+				//点击对话框以外的区域是否让对话框消失
+				builder.setCancelable(true);
+				//设置正面按钮
+				builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+							param.setResult(str);
+							dialog.dismiss();
+						}
+					});
+				builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+						}
+					});
 
-                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                param.setResult(str);
+				builder.create().show();
+				Looper.loop();
             }
         });
     }
