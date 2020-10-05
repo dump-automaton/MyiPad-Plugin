@@ -24,86 +24,99 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import com.dumpautomaton.myipadplugin.dialog.*;
 
-public class HookMyiPad implements IXposedHookLoadPackage {
+ class HookMyiPad implements IXposedHookLoadPackage
+{
     @Override
-    public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Exception
+	{
         // app load时调用
         // 匹配钩住的app的包名
-        if (lpparam.packageName.equals("com.netspace.myipad")) {
+        if (lpparam.packageName.equals("com.netspace.myipad"))
+		{
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                    Application appClz = (Application) param.thisObject;
-                    ClassLoader realClassLoader = appClz.getClassLoader();
-                    
-                    hookNewActivity(realClassLoader);
-                    //hookWifiConfigActivity(realClassLoader);
-                    hookHardwareInfo(realClassLoader);
-                }
-            });
+					@Override
+					protected void afterHookedMethod(final MethodHookParam param) throws Throwable
+					{
+						Application appClz = (Application) param.thisObject;
+						ClassLoader realClassLoader = appClz.getClassLoader();
+
+						hookNewActivity(realClassLoader);
+						//hookWifiConfigActivity(realClassLoader);
+						hookHardwareInfo(realClassLoader);
+					}
+				});
         }
     }
 
-    private void hookNewActivity(ClassLoader realClassLoader) throws ClassNotFoundException {
+    private void hookNewActivity(ClassLoader realClassLoader) throws ClassNotFoundException
+	{
         Class<?> instrumentationClass = XposedHelpers.findClass("android.app.Instrumentation", realClassLoader);
         Method method = XposedHelpers.findMethodExact(instrumentationClass, "newActivity",
-												 ClassLoader.class, String.class, Intent.class);
+													  ClassLoader.class, String.class, Intent.class);
 
         XposedBridge.hookMethod(method, new ActivityHook());
     }
 
-    private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException {
+    private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException
+	{
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
 
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
         XposedBridge.hookMethod(m, new XC_MethodHook() {
                 @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable
+				{
                     final Activity activity = ActivityHook.getCurrentActivity();
-                    if (Looper.myLooper()==null)
+                    if (Looper.myLooper() == null)
                         Looper.prepare();
-                    try {
-                    if (isSkipHWHWAuthentication("Plugin","Skip HW Authentication?",activity)) {
-                        activity.runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(ActivityHook.getCurrentActivity(), "Hooking!", Toast.LENGTH_LONG).show();
-                                /*Hook getHardwareInfo()
-                                try {
-                                    final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-                                    Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-                                    XposedBridge.hookMethod(m, new XC_MethodHook() {
-                                        @Override
-                                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                            XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                            String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                                            param.setResult(str);
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }*/
-                            }
-                        });
-                    }}
-                    catch(RuntimeException e2) {
+                    try
+					{
+						if (isSkipHWHWAuthentication("Plugin", "Skip HW Authentication?", activity))
+						{
+							activity.runOnUiThread(new Runnable() {
+									public void run()
+									{
+										Toast.makeText(ActivityHook.getCurrentActivity(), "Hooking!", Toast.LENGTH_LONG).show();
+										/*Hook getHardwareInfo()
+										 try {
+										 final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+										 Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+										 XposedBridge.hookMethod(m, new XC_MethodHook() {
+										 @Override
+										 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+										 XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+										 String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+										 param.setResult(str);
+										 }
+										 });
+										 } catch (Exception e) {
+										 activity.runOnUiThread(new Runnable() {
+										 public void run() {
+										 Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
+										 }
+										 });
+										 }*/
+									}
+								});
+						}}
+                    catch (RuntimeException e2)
+					{
                         Toast.makeText(ActivityHook.getCurrentActivity(), e2.toString(), Toast.LENGTH_LONG).show();
 
                     }
                 }
-        });
+			});
     }
     private boolean mResult;
-    public boolean isSkipHWHWAuthentication(String title, String message, Context context) {
+    public boolean isSkipHWHWAuthentication(String title, String message, Context context)
+	{
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new Handler() {
             @Override
-            public void handleMessage(Message mesg) {
+            public void handleMessage(Message mesg)
+			{
                 throw new RuntimeException();
             }
         };
@@ -113,81 +126,96 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         alert.setTitle(title);
         alert.setMessage(message);
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                mResult = true;
-                handler.sendMessage(handler.obtainMessage());
-            }
-        });
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					mResult = true;
+					handler.sendMessage(handler.obtainMessage());
+				}
+			});
         alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                mResult = false;
-                handler.sendMessage(handler.obtainMessage());
-            }
-        });
+				public void onClick(DialogInterface dialog, int whichButton)
+				{
+					mResult = false;
+					handler.sendMessage(handler.obtainMessage());
+				}
+			});
         alert.show();
 
         // loop till a runtime exception is triggered.
-        try { Looper.loop(); }
-        catch(RuntimeException e2) {}
+        try
+		{ Looper.loop(); }
+        catch (RuntimeException e2)
+		{}
 
         return mResult;
     }
-    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
+    private void hookWifiConfigActivity(final ClassLoader realClassLoader)
+	{
         XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                final Activity activity = (Activity) param.thisObject;
-                
-                new Thread() {
-                    public void run() {
-                        Looper.prepare();
-                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                        builder.setTitle("Plugin");
-                        builder.setMessage("Skip HW Authentication?");
-                        //点击对话框以外的区域是否让对话框消失
-                        builder.setCancelable(true);
-                        //设置正面按钮
-                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // Hook getHardwareInfo()
-                                try {
-                                    final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-                                    Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-                                    XposedBridge.hookMethod(m, new XC_MethodHook() {
-                                            @Override
-                                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                                String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                                                param.setResult(str);
-                                            }
-                                        });
-                                } catch (Exception e) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-                                dialog.dismiss();
-                            }
-                        });
-                        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                        
-                        builder.create().show();
-                        Looper.loop();
-                    }
-                }.start();
-            }
-        });
+				@Override
+				protected void afterHookedMethod(MethodHookParam param) throws Throwable
+				{
+					final Activity activity = (Activity) param.thisObject;
+
+					new Thread() {
+						public void run()
+						{
+							Looper.prepare();
+							AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+							builder.setTitle("Plugin");
+							builder.setMessage("Skip HW Authentication?");
+							//点击对话框以外的区域是否让对话框消失
+							builder.setCancelable(true);
+							//设置正面按钮
+							builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which)
+									{
+										// Hook getHardwareInfo()
+										try
+										{
+											final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+											Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+											XposedBridge.hookMethod(m, new XC_MethodHook() {
+													@Override
+													protected void afterHookedMethod(MethodHookParam param) throws Throwable
+													{
+														XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+														String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+														param.setResult(str);
+													}
+												});
+										}
+										catch (Exception e)
+										{
+											activity.runOnUiThread(new Runnable() {
+													public void run()
+													{
+														Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
+													}
+												});
+										}
+										dialog.dismiss();
+									}
+								});
+							builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which)
+									{
+										dialog.dismiss();
+									}
+								});
+
+							builder.create().show();
+							Looper.loop();
+						}
+					}.start();
+				}
+			});
     }
 
-    private String getHardwareInfoWithoutHardware(Context var0) {
+    private String getHardwareInfoWithoutHardware(Context var0)
+	{
         StringBuilder var2 = new StringBuilder();
         var2.append("PackageName: ");
         var2.append(var0.getPackageName());
@@ -213,14 +241,17 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         var2.append("\n");
         var8 = var2.toString();
         var4 = HardwareInfo.calculateMD5(new File(HardwareInfo.getFilePath(var0)));
-        if (var4 != null) {
+        if (var4 != null)
+		{
             var10 = new StringBuilder();
             var10.append(var8);
             var10.append("ClientMD5: ");
             var10.append(var4);
             var10.append("\n");
             var4 = var10.toString();
-        } else {
+        }
+		else
+		{
             var4 = var8;
         }
         return var4;
