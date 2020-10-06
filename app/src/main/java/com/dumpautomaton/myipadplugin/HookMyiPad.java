@@ -3,11 +3,9 @@ package com.dumpautomaton.myipadplugin;
 import android.os.Handler;
 import android.os.Looper;
 
-import android.app.AndroidAppHelper;
 import android.app.Application;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +24,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import com.dumpautomaton.myipadplugin.dialog.*;
 
-class HookMyiPad implements IXposedHookLoadPackage {
+public class HookMyiPad implements IXposedHookLoadPackage {
+    private boolean mResult;
+
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         // app load时调用
@@ -54,6 +54,7 @@ class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException {
+
         // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
@@ -63,42 +64,35 @@ class HookMyiPad implements IXposedHookLoadPackage {
                 final Activity activity = ActivityHook.getCurrentActivity();
                 if (Looper.myLooper() == null)
                     Looper.prepare();
-                try {
-                    if (isSkipHWAuthentication("Plugin", "Skip HW Authentication?", activity)) {
+                if (isSkipHWAuthentication("Plugin", "Skip HW Authentication?", activity)) {
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    //Hook getHardwareInfo()
+                    try {
+                        final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+                        Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
+                        XposedBridge.hookMethod(m, new XC_MethodHook() {
+                            @Override
+                            protected void afterHookedMethod(MethodHookParam param) {
+                                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+                                String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
+                                param.setResult(str);
+                            }
+                        });
+                    } catch (Exception e) {
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
-                                Toast.makeText(ActivityHook.getCurrentActivity(), "Hooking!", Toast.LENGTH_LONG).show();
-                                /*Hook getHardwareInfo ()
-                                try {
-                                    final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-                                    Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-                                    XposedBridge.hookMethod(m, new XC_MethodHook() {
-                                        @Override
-                                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                            XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                            String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
-                                            param.setResult(str);
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }*/
+                                Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
                             }
                         });
                     }
-                } catch (RuntimeException e2) {
-                    Toast.makeText(ActivityHook.getCurrentActivity(), e2.toString(), Toast.LENGTH_LONG).show();
-
                 }
             }
         });
     }
-
-    private boolean mResult;
 
     public boolean isSkipHWAuthentication(String title, String message, Context context) {
         // make a handler that throws a runtime exception when a message is received
@@ -132,7 +126,6 @@ class HookMyiPad implements IXposedHookLoadPackage {
             Looper.loop();
         } catch (RuntimeException e2) {
         }
-
         return mResult;
     }
 
@@ -141,7 +134,6 @@ class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = (Activity) param.thisObject;
-
                 new Thread() {
                     public void run() {
                         Looper.prepare();
@@ -149,8 +141,7 @@ class HookMyiPad implements IXposedHookLoadPackage {
                         builder.setTitle("Plugin");
                         builder.setMessage("Skip HW Authentication?");
                         //点击对话框以外的区域是否让对话框消失
-                        builder.setCancelable(true);
-                        //设置正面按钮
+                        builder.setCancelable(true);//设置正面按钮
                         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -182,7 +173,6 @@ class HookMyiPad implements IXposedHookLoadPackage {
                                 dialog.dismiss();
                             }
                         });
-
                         builder.create().show();
                         Looper.loop();
                     }
