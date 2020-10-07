@@ -26,7 +26,6 @@ import com.dumpautomaton.myipadplugin.dialog.*;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
     private boolean mResult;
-    private static boolean isFirstLogin = true;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -65,28 +64,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 final Activity activity = ActivityHook.getCurrentActivity();
                 if (Looper.myLooper() == null)
                     Looper.prepare();
-                if (isFirstLogin) {
-                    if (showSyncBinaryDialog("Plugin", "Skip HW Authentication?", activity)) {
-                        activity.runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                        //setResult
-                        try {
-                            XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                            String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
-                            param.setResult(str);
-                            isFirstLogin = false;
-                        } catch (Exception e) {
-                            activity.runOnUiThread(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                if (showSyncBinaryDialog("Plugin", "Skip HW Authentication?", activity)) {
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
                         }
-                    }
-                } else {
+                    });
+                    //setResult
                     try {
                         XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
                         String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
