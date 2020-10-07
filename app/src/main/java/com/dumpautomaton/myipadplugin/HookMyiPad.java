@@ -26,6 +26,7 @@ import com.dumpautomaton.myipadplugin.dialog.*;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
     private boolean mResult;
+    private static boolean isFirstLogin = true;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -64,24 +65,32 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 final Activity activity = ActivityHook.getCurrentActivity();
                 if (Looper.myLooper() == null)
                     Looper.prepare();
-                if (isSkipHWAuthentication("Plugin", "Skip HW Authentication?", activity)) {
-                    activity.runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                    //Hook getHardwareInfo()
-                    try {
-                        final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-                        Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-                        XposedBridge.hookMethod(m, new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(MethodHookParam param) {
-                                XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
-                                param.setResult(str);
+                if (isFirstLogin) {
+                    if (showSyncBinaryDialog("Plugin", "Skip HW Authentication?", activity)) {
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
                             }
                         });
+                        //setResult
+                        try {
+                            XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+                            String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
+                            param.setResult(str);
+                            isFirstLogin = false;
+                        } catch (Exception e) {
+                            activity.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    try {
+                        XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
+                        String str = getHardwareInfoWithoutHardware((Context) param.args[0]);
+                        param.setResult(str);
                     } catch (Exception e) {
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
@@ -94,7 +103,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    public boolean isSkipHWAuthentication(String title, String message, Context context) {
+    public boolean showSyncBinaryDialog(String title, String message, Context context) {
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new Handler() {
             @Override
