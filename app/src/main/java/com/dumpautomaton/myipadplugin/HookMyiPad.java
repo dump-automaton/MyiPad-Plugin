@@ -22,8 +22,6 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import com.dumpautomaton.myipadplugin.dialog.*;
-
 public class HookMyiPad implements IXposedHookLoadPackage {
     private boolean mResult;
 
