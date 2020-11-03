@@ -144,7 +144,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                                         @Override
                                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                                             XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                            String str = HardwareInfo.getHardwareInfo((Context) param.args[0]);
+                                            String str = getHardwareInfoWithoutHardware();
                                             param.setResult(str);
                                         }
                                     });
@@ -172,7 +172,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private String getHardwareInfoWithoutHardware() {
+    public static String getHardwareInfoWithoutHardware() {
         String str5 = "";
 
         String calculateMD5 = "4413a7c677c6f0b0e4aa3ef90af21797";
