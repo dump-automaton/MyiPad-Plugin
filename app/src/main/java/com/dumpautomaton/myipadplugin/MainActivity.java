@@ -12,6 +12,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(HookMyiPad.getHardwareInfoWithoutHardware());
+        textView.setText(UtilsForHook.getHardwareInfoWithoutHardware());
     }
 }
