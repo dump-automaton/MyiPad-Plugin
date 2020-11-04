@@ -1,5 +1,7 @@
 package com.dumpautomaton.myipadplugin;
 
+import android.content.ComponentName;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -35,6 +37,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = appClz.getClassLoader();
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
+                    hookAboutFragment(realClassLoader);
                 }
             });
         }
@@ -73,6 +76,19 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         });
                     }
                 }
+            }
+        });
+    }
+
+    private void hookAboutFragment(ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.SettingsActivity$AboutFragment", realClassLoader, "onCreate", Bundle.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Intent xmlIntent = new Intent();
+                ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.MainActivity");
+                xmlIntent.setComponent(component);
+                XposedHelpers.callMethod(param.thisObject, "addPreferencesFromIntent", xmlIntent);
+                //addPreferencesFromIntent(xmlIntent);
             }
         });
     }
