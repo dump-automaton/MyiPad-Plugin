@@ -35,7 +35,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     Application appClz = (Application) param.thisObject;
                     ClassLoader realClassLoader = appClz.getClassLoader();
                     hookNewActivity(realClassLoader);
-                    //hookWifiConfigActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
                 }
             });
@@ -50,8 +49,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException {
-
-        // 加载app的指定类
         final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
         XposedBridge.hookMethod(m, new XC_MethodHook() {
@@ -117,5 +114,4 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
         return mResult;
     }
-
 }
