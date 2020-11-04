@@ -15,11 +15,9 @@
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
-
         <meta-data
             android:name="xposeddescription"
             android:value="for MyiPad" />
-
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
@@ -29,6 +27,8 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <meta-data android:name="android.preference"
+                    android:resource="@xml/preferences"/>
             </intent-filter>
         </activity>
     </application>
