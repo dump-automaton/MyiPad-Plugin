@@ -11,7 +11,7 @@ import android.widget.EditText;
 public class UtilsForHook {
 
     private static String mStringResult;
-    public static String showSyncEditDialog(String title, final String defaultString, Context context) {
+    public static String showSyncEditDialog(String title, String editString, final String defaultString, Context context) {
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
@@ -27,10 +27,14 @@ public class UtilsForHook {
                 handler.sendMessage(handler.obtainMessage());
             }
         });
+        if (editString != null) {
+            editText.setText(editString);
+        }
         if (defaultString != null) {
             alert.setNeutralButton("Use Default", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    editText.setText(defaultString);
+                    mStringResult = defaultString;
+                    handler.sendMessage(handler.obtainMessage());
                 }
             });
         }
