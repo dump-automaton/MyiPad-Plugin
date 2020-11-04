@@ -21,7 +21,6 @@ public class UtilsForHook {
         final EditText editText = new EditText(context);
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(title).setView(editText);
-        alert.show();
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 mStringResult = editText.getText().toString();
@@ -31,11 +30,11 @@ public class UtilsForHook {
         if (defaultString != null) {
             alert.setNeutralButton("Use Default", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    mStringResult = defaultString;
-                    handler.sendMessage(handler.obtainMessage());
+                    editText.setText(defaultString);
                 }
             });
         }
+        alert.show();
         // loop till a runtime exception is triggered.
         try {
             Looper.loop();
