@@ -21,7 +21,6 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
-    private boolean mResult;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -55,19 +54,17 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = ActivityHook.getCurrentActivity();
-                if (Looper.myLooper() == null)
-                    Looper.prepare();
-                if (showSyncBinaryDialog("Plugin", "Skip HW Authentication?", activity)) {
+                String result = UtilsForHook.showSyncEditDialog("Plugin",
+                        (String)param.getResult(), UtilsForHook.getHardwareInfoWithoutHardware(), activity);
+                if (result != null && result != "") {
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
                         }
                     });
-                    //setResult
+
                     try {
-                        XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                        String str = UtilsForHook.getHardwareInfoWithoutHardware();
-                        param.setResult(str);
+                        param.setResult(result);
                     } catch (Exception e) {
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
@@ -78,40 +75,5 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
             }
         });
-    }
-
-    public boolean showSyncBinaryDialog(String title, String message, Context context) {
-        // make a handler that throws a runtime exception when a message is received
-        final Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message mesg) {
-                throw new RuntimeException();
-            }
-        };
-
-        // make a text input dialog and show it
-        AlertDialog.Builder alert = new AlertDialog.Builder(context);
-        alert.setTitle(title);
-        alert.setMessage(message);
-        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                mResult = true;
-                handler.sendMessage(handler.obtainMessage());
-            }
-        });
-        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                mResult = false;
-                handler.sendMessage(handler.obtainMessage());
-            }
-        });
-        alert.show();
-
-        // loop till a runtime exception is triggered.
-        try {
-            Looper.loop();
-        } catch (RuntimeException e2) {
-        }
-        return mResult;
     }
 }
