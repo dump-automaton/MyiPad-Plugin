@@ -11,7 +11,7 @@ import android.widget.EditText;
 public class UtilsForHook {
 
     private static String mStringResult;
-    public static String showSyncEditDialog(String title, String defaultString, Context context) {
+    public static String showSyncEditDialog(String title, final String defaultString, Context context) {
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
@@ -22,15 +22,20 @@ public class UtilsForHook {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(title).setView(editText);
         alert.show();
-        if (defaultString != null) {
-            editText.setText(defaultString);
-        }
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 mStringResult = editText.getText().toString();
                 handler.sendMessage(handler.obtainMessage());
             }
         });
+        if (defaultString != null) {
+            alert.setNeutralButton("Use Default", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    mStringResult = defaultString;
+                    handler.sendMessage(handler.obtainMessage());
+                }
+            });
+        }
         // loop till a runtime exception is triggered.
         try {
             Looper.loop();
