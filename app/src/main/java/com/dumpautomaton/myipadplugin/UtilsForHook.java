@@ -12,13 +12,7 @@ public class UtilsForHook {
     private static boolean mResult;
     public static boolean showSyncBinaryDialog(String title, String message, Context context) {
         // make a handler that throws a runtime exception when a message is received
-        final Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message mesg) {
-                throw new RuntimeException();
-            }
-        };
-
+        final Handler handler = new SyncDialogMessageHandler();
         // make a text input dialog and show it
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(title);
@@ -43,6 +37,13 @@ public class UtilsForHook {
         } catch (RuntimeException e2) {
         }
         return mResult;
+    }
+
+    private static class SyncDialogMessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message mesg) {
+            throw new RuntimeException();
+        }
     }
 
     public static String getHardwareInfoWithoutHardware() {
