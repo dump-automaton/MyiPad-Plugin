@@ -120,58 +120,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         return mResult;
     }
 
-    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                final Activity activity = (Activity) param.thisObject;
-                new Thread() {
-                    public void run() {
-                        Looper.prepare();
-                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                        builder.setTitle("Plugin");
-                        builder.setMessage("Skip HW Authentication?");
-                        //点击对话框以外的区域是否让对话框消失
-                        builder.setCancelable(true);//设置正面按钮
-                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // Hook getHardwareInfo()
-                                try {
-                                    final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
-                                    Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-                                    XposedBridge.hookMethod(m, new XC_MethodHook() {
-                                        @Override
-                                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                            XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                                            String str = getHardwareInfoWithoutHardware();
-                                            param.setResult(str);
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-                                dialog.dismiss();
-                            }
-                        });
-                        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                        builder.create().show();
-                        Looper.loop();
-                    }
-                }.start();
-            }
-        });
-    }
-
     public static String getHardwareInfoWithoutHardware() {
         String str5 = "";
 
