@@ -12,6 +12,9 @@ public class UtilsForHook {
 
     private static String mStringResult;
     public static String showSyncEditDialog(String title, String defaultString, Context context) {
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new SyncDialogMessageHandler();
         // make a text input dialog and show it
@@ -38,6 +41,9 @@ public class UtilsForHook {
 
     private static boolean mResult;
     public static boolean showSyncBinaryDialog(String title, String message, Context context) {
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new SyncDialogMessageHandler();
         // make a text input dialog and show it

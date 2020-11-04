@@ -54,19 +54,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = ActivityHook.getCurrentActivity();
-                if (Looper.myLooper() == null)
-                    Looper.prepare();
-                if (UtilsForHook.showSyncBinaryDialog("Plugin", "Skip HW Authentication?", activity)) {
+                String result = UtilsForHook.showSyncEditDialog("Plugin", UtilsForHook.getHardwareInfoWithoutHardware(), activity);
+                if (result != null && result != "") {
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
                         }
                     });
-                    //setResult
+
                     try {
-                        XposedBridge.log("[HookMyiPad]Hooked getHardwareInfo");
-                        String str = UtilsForHook.getHardwareInfoWithoutHardware();
-                        param.setResult(str);
+                        param.setResult(result);
                     } catch (Exception e) {
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
