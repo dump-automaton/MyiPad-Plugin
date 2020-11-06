@@ -80,15 +80,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookAboutFragment(ClassLoader realClassLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.myipad.SettingsActivity$AboutFragment", realClassLoader, "onCreate", Bundle.class, new XC_MethodHook() {
+    private void hookAboutFragment(ClassLoader realClassLoader) throws Throwable {
+        final Class clazz = realClassLoader.loadClass("com.netspace.myipad.SettingsActivity$AboutFragment");
+        Method onCreateMethod = XposedHelpers.findMethodExact(clazz, "onCreate", Context.class);
+        final Method addPreferencesMethod = XposedHelpers.findMethodExact(clazz, "addPreferencesFromIntent", Intent.class);
+
+        XposedBridge.hookMethod(onCreateMethod, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Intent xmlIntent = new Intent();
                 ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.MainActivity");
                 xmlIntent.setComponent(component);
-                XposedHelpers.callMethod(param.thisObject, "addPreferencesFromIntent", xmlIntent);
-                //addPreferencesFromIntent(xmlIntent);
+                XposedBridge.invokeOriginalMethod(addPreferencesMethod, param.thisObject, new Object[] {xmlIntent});
             }
         });
     }
