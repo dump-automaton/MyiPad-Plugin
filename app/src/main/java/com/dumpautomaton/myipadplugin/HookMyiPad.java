@@ -82,7 +82,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     private void hookAboutFragment(ClassLoader realClassLoader) throws Throwable {
         final Class clazz = realClassLoader.loadClass("com.netspace.myipad.SettingsActivity$AboutFragment");
-        Method onCreateMethod = XposedHelpers.findMethodExact(clazz, "onCreate", Context.class);
+        Method onCreateMethod = XposedHelpers.findMethodExact(clazz, "onCreate", Bundle.class);
         final Method addPreferencesMethod = XposedHelpers.findMethodExact(clazz, "addPreferencesFromIntent", Intent.class);
 
         XposedBridge.hookMethod(onCreateMethod, new XC_MethodHook() {
