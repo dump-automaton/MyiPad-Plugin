@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
@@ -37,6 +38,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = appClz.getClassLoader();
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
+                    hookAlertDialog(realClassLoader);
                     hookAboutFragment(realClassLoader);
                 }
             });
@@ -91,6 +93,15 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.MainActivity");
                 xmlIntent.setComponent(component);
                 XposedHelpers.callMethod(param.thisObject, "addPreferencesFromIntent", xmlIntent);
+            }
+        });
+    }
+
+    private void hookAlertDialog(ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("androidx.appcompat.app.AlertDialog.Builder", realClassLoader, "setCancelable", boolean.class, new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                return param.thisObject;
             }
         });
     }
