@@ -57,7 +57,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = ActivityHook.getCurrentActivity();
-                String result = UtilsForHook.showSyncEditDialog(Looper.getMainLooper(), "Plugin",
+                if (Looper.myLooper() == null) {
+                    Looper.prepare();
+                }
+                String result = UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
                         (String)param.getResult(), UtilsForHook.getHardwareInfoWithoutHardware(), activity);
                 if (result != null && result != "") {
                     activity.runOnUiThread(new Runnable() {
