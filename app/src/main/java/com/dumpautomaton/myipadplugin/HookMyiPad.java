@@ -51,15 +51,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException {
-        final Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
+        final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
         XposedBridge.hookMethod(m, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = ActivityHook.getCurrentActivity();
-                String result = UtilsForHook.showSyncEditDialog("Plugin",
+                if (Looper.myLooper() == null) {
+                    Looper.prepare();
+                }
+                String result = UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
                         (String)param.getResult(), UtilsForHook.getHardwareInfoWithoutHardware(), activity);
-                if (result != null && result != "") {
+                if (result != null && !result.equals("")) {
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();

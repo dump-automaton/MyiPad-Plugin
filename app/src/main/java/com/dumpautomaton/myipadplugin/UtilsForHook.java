@@ -8,15 +8,13 @@ import android.os.Looper;
 import android.os.Message;
 import android.widget.EditText;
 
+@SuppressWarnings("CatchMayIgnoreException")
 public class UtilsForHook {
 
     private static String mStringResult;
-    public static String showSyncEditDialog(String title, String editString, final String defaultString, Context context) {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
+    public static String showSyncEditDialog(Looper looper, String title, String editString, final String defaultString, Context context) {
         // make a handler that throws a runtime exception when a message is received
-        final Handler handler = new SyncDialogMessageHandler();
+        final Handler handler = new SyncDialogMessageHandler(looper);
         // make a text input dialog and show it
         final EditText editText = new EditText(context);
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
@@ -48,12 +46,9 @@ public class UtilsForHook {
     }
 
     private static boolean mResult;
-    public static boolean showSyncBinaryDialog(String title, String message, Context context) {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
+    public static boolean showSyncBinaryDialog(Looper looper, String title, String message, Context context) {
         // make a handler that throws a runtime exception when a message is received
-        final Handler handler = new SyncDialogMessageHandler();
+        final Handler handler = new SyncDialogMessageHandler(looper);
         // make a text input dialog and show it
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
         alert.setTitle(title);
@@ -81,9 +76,14 @@ public class UtilsForHook {
     }
 
     private static class SyncDialogMessageHandler extends Handler {
-        @Override
-        public void handleMessage(Message mesg) {
-            throw new RuntimeException();
+        public SyncDialogMessageHandler(Looper looper) {
+            super(looper, new Handler.Callback() {
+
+                @Override
+                public boolean handleMessage(Message msg) {
+                    throw new RuntimeException();
+                }
+            });
         }
     }
 
@@ -91,14 +91,10 @@ public class UtilsForHook {
         String str5 = "";
 
         String calculateMD5 = "4413a7c677c6f0b0e4aa3ef90af21797";
-        if (calculateMD5 != null) {
-            str5 = str5 + "services.jar: " + calculateMD5 + "\n";
-        }
+        str5 = str5 + "services.jar: " + calculateMD5 + "\n";
 
         String calculateMD52 = "afce46aac8820539344e6b6aa3cfc9dc";
-        if (calculateMD52 != null) {
-            str5 = str5 + "framework.jar: " + calculateMD52 + "\n";
-        }
+        str5 = str5 + "framework.jar: " + calculateMD52 + "\n";
 
         String str6 = str5 + "PackageName: com.netspace.myipad\nClientVersion: 5.2.3.52303\n";
         String str7 = str6 + "ClientSign: 308203253082020da00302010202040966f52d300d06092a864886f70d01010b05003042310b30090603550406" +
