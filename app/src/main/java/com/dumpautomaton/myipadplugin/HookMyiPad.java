@@ -27,8 +27,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        // app load时调用
-        // 匹配钩住的app的包名
         if (lpparam.packageName.equals("com.netspace.myipad")) {
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
@@ -40,6 +38,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
                     hookAboutFragment(realClassLoader);
+                    hookWifiConfigActivity(realClassLoader);
                 }
             });
         }
@@ -102,6 +101,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 return param.thisObject;
+            }
+        });
+    }
+
+    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) param.thisObject;
+                activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
             }
         });
     }
