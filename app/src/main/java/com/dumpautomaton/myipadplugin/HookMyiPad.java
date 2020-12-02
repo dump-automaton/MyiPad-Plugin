@@ -39,7 +39,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
-                    hookAboutFragment(realClassLoader);
+                    hookWifiConfigActivity(realClassLoader);
                 }
             });
         }
@@ -102,6 +102,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 return param.thisObject;
+            }
+        });
+    }
+
+    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) param.thisObject;
+                activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
             }
         });
     }
