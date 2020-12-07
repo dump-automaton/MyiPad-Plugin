@@ -33,6 +33,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
                     hookAddPluginPreferencesUI(realClassLoader);
+                    hookNeedMDM(realClassLoader);
                 }
             });
         }
@@ -102,6 +103,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
                 activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
+            }
+        });
+    }
+
+    private void hookNeedMDM(ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class appClass = Class.forName("com.netspace.myipad.MyiPadApplication", true, realClassLoader);
+        XposedHelpers.findAndHookMethod(appClass, "startAppBackgroundService", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                boolean mbNeedMDM = XposedHelpers.getBooleanField(param.thisObject, "mbNeedMDM");
+                Toast.makeText((Application)param.thisObject, String.valueOf(mbNeedMDM), Toast.LENGTH_LONG).show();
+                XposedHelpers.setBooleanField(param.thisObject, "mbNeedMDM", false);
             }
         });
     }
