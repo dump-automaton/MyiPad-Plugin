@@ -109,7 +109,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     private void hookNeedMDM(ClassLoader realClassLoader) throws ClassNotFoundException {
         Class appClass = Class.forName("com.netspace.myipad.MyiPadApplication", true, realClassLoader);
-        XposedHelpers.findAndHookMethod(appClass, "startAppBackgroundService", new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod(appClass, "onCreate", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 boolean mbNeedMDM = XposedHelpers.getBooleanField(param.thisObject, "mbNeedMDM");
