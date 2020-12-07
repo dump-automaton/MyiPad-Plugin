@@ -24,4 +24,8 @@
         android:title="Block screen capture"
         android:defaultValue="true"/>
 
+    <Preference
+        android:key="remove_fragment"
+        android:title="Close"/>
+
 </PreferenceScreen>
