@@ -1,17 +1,12 @@
 package com.dumpautomaton.myipadplugin;
 
-import android.content.ComponentName;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
 
 import android.app.Application;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Message;
 import android.widget.Toast;
 
 import java.lang.reflect.Method;
@@ -37,8 +32,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
-                    hookAboutFragment(realClassLoader);
-                    hookWifiConfigActivity(realClassLoader);
+                    hookAddPluginPreferencesUI(realClassLoader);
                 }
             });
         }
@@ -84,18 +78,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookAboutFragment(ClassLoader realClassLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.myipad.SettingsActivity$AboutFragment", realClassLoader, "onCreate", Bundle.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Intent xmlIntent = new Intent();
-                ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.MainActivity");
-                xmlIntent.setComponent(component);
-                XposedHelpers.callMethod(param.thisObject, "addPreferencesFromIntent", xmlIntent);
-            }
-        });
-    }
-
     private void hookAlertDialog(ClassLoader realClassLoader) {
         XposedHelpers.findAndHookMethod("androidx.appcompat.app.AlertDialog.Builder", realClassLoader, "setCancelable", boolean.class, new XC_MethodReplacement() {
             @Override
@@ -105,8 +87,17 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookWifiConfigActivity(final ClassLoader realClassLoader) {
+    private void hookAddPluginPreferencesUI(final ClassLoader realClassLoader) throws ClassNotFoundException {
         XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) param.thisObject;
+                activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
+            }
+        });
+
+        Class settingsActivityClasss = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
+        XposedHelpers.findAndHookMethod(settingsActivityClasss, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
