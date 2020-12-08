@@ -14,11 +14,13 @@ import java.lang.reflect.Method;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
+    private static XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -34,6 +36,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookAlertDialog(realClassLoader);
                     hookAddPluginPreferencesUI(realClassLoader);
                     hookNeedMDM(realClassLoader);
+                    if (sharedPreferences.getBoolean("disable_auto_update", true)) {
+                        hookAutoUpdate(realClassLoader);
+                    }
                 }
             });
         }
@@ -107,15 +112,22 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookNeedMDM(ClassLoader realClassLoader) throws ClassNotFoundException {
-        Class appClass = Class.forName("com.netspace.myipad.MyiPadApplication", true, realClassLoader);
-        XposedHelpers.findAndHookMethod(appClass, "onCreate", new XC_MethodHook() {
+    private void hookNeedMDM(final ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
+        Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
+
+        XposedBridge.hookMethod(m, new XC_MethodHook() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                boolean mbNeedMDM = XposedHelpers.getBooleanField(param.thisObject, "mbNeedMDM");
-                Toast.makeText((Application)param.thisObject, String.valueOf(mbNeedMDM), Toast.LENGTH_LONG).show();
-                XposedHelpers.setBooleanField(param.thisObject, "mbNeedMDM", false);
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Class baseAppClz = Class.forName("com.netspace.library.application.MyiBaseApplication", true, realClassLoader);
+                Application baseApp = (Application) XposedHelpers.callStaticMethod(baseAppClz, "getInstance");
+                Toast.makeText(baseApp, String.valueOf(param.getResult()), Toast.LENGTH_LONG).show();
+                XposedHelpers.setBooleanField(baseApp, "mbNeedMDM", false);
             }
         });
+    }
+
+    private void hookAutoUpdate(ClassLoader realClassLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
     }
 }

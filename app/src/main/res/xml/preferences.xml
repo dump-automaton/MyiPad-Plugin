@@ -5,23 +5,13 @@
         android:title="MyiPad Tweaks"/>
 
     <SwitchPreference
-        android:key="skip_hardware_certification"
-        android:title="Skip hardware certification"
-        android:defaultValue="true"/>
-
-    <SwitchPreference
         android:key="skip_elm"
         android:title="Skip elm activation"
         android:defaultValue="true"/>
 
     <SwitchPreference
-        android:key="block_auto_update"
-        android:title="Block auto update"
-        android:defaultValue="true"/>
-
-    <SwitchPreference
-        android:key="block_screen_capture"
-        android:title="Block screen capture"
+        android:key="disable_auto_update"
+        android:title="Disable auto update"
         android:defaultValue="true"/>
 
     <Preference
