@@ -94,6 +94,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookAddPluginPreferencesUI(final ClassLoader realClassLoader) throws ClassNotFoundException {
+        PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", realClassLoader, "dumpLogcatToFile", String.class);
         XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
