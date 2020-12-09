@@ -88,34 +88,7 @@ public class UtilsForHook {
     }
 
     public static String getHardwareInfoWithoutHardware() {
-        return  "BOARD: universal7870\n" +
-                "BOOTLOADER: P583ZCU3BSD1_B2BF\n" +
-                "BRAND: samsung\n" +
-                "CPU_ABI: armeabi-v7a\n" +
-                "CPU_ABI2: armeabi\n" +
-                "DEVICE: gtanotexlwifichn\n" +
-                "DISPLAY: NRD90M.P583ZCU3BSD1_B2BF\n" +
-                "FINGERPRINT: samsung/gtanotexlwifizc/gtanotexlwifichn:7.0/NRD90M/P583ZCU3BSD1_B2BF:user/release-keys\n" +
-                "HARDWARE: samsungexynos7870\n" +
-                "HOST: SWDH4613\n" +
-                "ID: NRD90M\n" +
-                "MANUFACTURER: samsung\n" +
-                "MODEL: SM-P583\n" +
-                "PRODUCT: gtanotexlwifizc\n" +
-                "RADIO: \n" +
-                "SERIAL: b002c043bbc50af5\n" +
-                "TAGS: release-keys\n" +
-                "TIME: 1576142020000\n" +
-                "TYPE: user\n" +
-                "UNKNOWN: unknown\n" +
-                "USER: dpi\n" +
-                "VERSION_CODENAME: REL\n" +
-                "VERSION_RELEASE: 7.0\n" +
-                "VERSION_SDK_INT: 24\n" +
-                "WifiMac: MACAdress test\n" +
-                "WifiSSID: \n" +
-                "MemTotal:        2900844 kB\n" +
-                "services.jar: 4413a7c677c6f0b0e4aa3ef90af21797\n" +
+        return "services.jar: 4413a7c677c6f0b0e4aa3ef90af21797\n" +
                 "framework.jar: afce46aac8820539344e6b6aa3cfc9dc\n" +
                 "PackageName: com.netspace.myipad\n" +
                 "ClientVersion: 5.2.3.52405\n" +
