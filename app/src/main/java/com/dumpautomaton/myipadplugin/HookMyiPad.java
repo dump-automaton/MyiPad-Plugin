@@ -28,14 +28,15 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
                 @Override
-                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
                     Application appClz = (Application) param.thisObject;
                     ClassLoader realClassLoader = appClz.getClassLoader();
+
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
                     hookAddPluginPreferencesUI(realClassLoader);
-                    hookNeedMDM(realClassLoader);
+                    hookELMActivation(realClassLoader);
                     if (sharedPreferences.getBoolean("disable_auto_update", true)) {
                         hookAutoUpdate(realClassLoader);
                     }
@@ -103,7 +104,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
-        Class settingsActivityClasss = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
+        Class<?> settingsActivityClasss = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
         XposedHelpers.findAndHookMethod(settingsActivityClasss, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -113,19 +114,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookNeedMDM(final ClassLoader realClassLoader) throws ClassNotFoundException {
-        Class clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
+    private void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
         Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
 
-        XposedBridge.hookMethod(m, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Class baseAppClz = Class.forName("com.netspace.library.application.MyiBaseApplication", true, realClassLoader);
-                Application baseApp = (Application) XposedHelpers.callStaticMethod(baseAppClz, "getInstance");
-                Toast.makeText(baseApp, String.valueOf(param.getResult()), Toast.LENGTH_LONG).show();
-                XposedHelpers.setBooleanField(baseApp, "mbNeedMDM", false);
-            }
-        });
+        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
     }
 
     private void hookAutoUpdate(ClassLoader realClassLoader) {
