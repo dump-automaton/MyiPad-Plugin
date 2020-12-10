@@ -34,8 +34,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
                     hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader);
-                    hookAlertDialog(realClassLoader);
                     hookAddPluginPreferencesUI(realClassLoader);
+                    if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
+                        hookAlertDialog(realClassLoader);
+                    }
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
                         hookELMActivation(realClassLoader);
                     }

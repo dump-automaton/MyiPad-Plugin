@@ -11,6 +11,9 @@
             android:key="disable_auto_update"
             android:title="Disable auto update"
             android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="cancelable_dialog"
+            android:title="Make all dialog cancelable"/>
         <Preference
             android:key="remove_fragment"
             android:title="Close"/>
