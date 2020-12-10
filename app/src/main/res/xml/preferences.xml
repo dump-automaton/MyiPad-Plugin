@@ -3,11 +3,11 @@
 
     <PreferenceCategory
         android:title="MyiPad Tweaks">
-        <SwitchPreference
-            android:key="skip_elm"
-            android:title="Skip elm activation"
+        <CheckBoxPreference
+            android:key="disable_mdm"
+            android:title="Disable MDM"
             android:defaultValue="true"/>
-        <SwitchPreference
+        <CheckBoxPreference
             android:key="disable_auto_update"
             android:title="Disable auto update"
             android:defaultValue="true"/>

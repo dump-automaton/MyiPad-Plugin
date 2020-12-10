@@ -36,7 +36,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookHardwareInfo(realClassLoader);
                     hookAlertDialog(realClassLoader);
                     hookAddPluginPreferencesUI(realClassLoader);
-                    hookELMActivation(realClassLoader);
+                    if (sharedPreferences.getBoolean("disable_mdm", true)) {
+                        hookELMActivation(realClassLoader);
+                    }
                     if (sharedPreferences.getBoolean("disable_auto_update", true)) {
                         hookAutoUpdate(realClassLoader);
                     }
