@@ -13,7 +13,8 @@
             android:defaultValue="true"/>
         <CheckBoxPreference
             android:key="cancelable_dialog"
-            android:title="Make all dialog cancelable"/>
+            android:title="Make all dialog cancelable"
+            android:defaultValue="true"/>
         <Preference
             android:key="remove_fragment"
             android:title="Close"/>
