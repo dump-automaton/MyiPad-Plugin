@@ -148,5 +148,15 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+
+        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String action = (String) param.args[0];
+                if (action.equalsIgnoreCase("StatusReport")) {
+                    param.setResult(null);
+                }
+            }
+        })
     }
 }
