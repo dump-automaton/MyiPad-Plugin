@@ -7,6 +7,7 @@ import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.lang.reflect.Method;
@@ -20,7 +21,8 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
-    private static XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
+    private static final String TAG = "HookMyiPad";
+    private static final XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -44,6 +46,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("disable_auto_update", true)) {
                         hookAutoUpdate(realClassLoader);
                     }
+                    hookReport(realClassLoader);
                 }
             });
         }
@@ -108,8 +111,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
-        Class<?> settingsActivityClasss = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
-        XposedHelpers.findAndHookMethod(settingsActivityClasss, "onCreate", Bundle.class, new XC_MethodHook() {
+        Class<?> settingsActivityClz = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
+        XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
@@ -127,5 +130,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     private void hookAutoUpdate(ClassLoader realClassLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
+    }
+
+    private void hookReport(ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
+        XposedHelpers.findAndHookMethod(imServiceClz, "reportStatus", String.class, String.class, new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e(TAG, "Catch report:" + param.args[0] + " value :" + param.args[1]);
+                return null;
+            }
+        });
     }
 }
