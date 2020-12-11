@@ -46,7 +46,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("disable_auto_update", true)) {
                         hookAutoUpdate(realClassLoader);
                     }
-                    hookReport(realClassLoader);
+                    if (sharedPreferences.getBoolean("in_private", true)) {
+                        hookStatusReport(realClassLoader);
+                    }
                 }
             });
         }
@@ -132,7 +134,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
     }
 
-    private void hookReport(ClassLoader classLoader) throws ClassNotFoundException {
+    private void hookStatusReport(ClassLoader classLoader) throws ClassNotFoundException {
         Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
         XposedHelpers.findAndHookMethod(imServiceClz, "reportStatus", String.class, String.class, new XC_MethodReplacement() {
             @Override
@@ -149,14 +151,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                String action = (String) param.args[0];
-                if (action.equalsIgnoreCase("StatusReport")) {
-                    param.setResult(null);
-                }
-            }
-        })
+        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
     }
 }

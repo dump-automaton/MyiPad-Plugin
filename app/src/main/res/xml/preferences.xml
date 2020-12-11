@@ -15,6 +15,11 @@
             android:key="cancelable_dialog"
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="in_private"
+            android:title="In Private mode (experimental)"
+            android:summary="Attempt to block uploading your status"
+            android:defaultValue="true"/>
         <Preference
             android:key="remove_fragment"
             android:title="Close"/>
