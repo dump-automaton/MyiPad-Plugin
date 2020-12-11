@@ -141,5 +141,12 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+        XposedHelpers.findAndHookMethod(imServiceClz, "reportBasicFields", new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                XposedHelpers.setBooleanField(param.thisObject, "mbBasicStatusReported", true);
+                return null;
+            }
+        });
     }
 }
