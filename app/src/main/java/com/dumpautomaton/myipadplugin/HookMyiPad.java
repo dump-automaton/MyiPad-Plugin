@@ -109,7 +109,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
+                activity.getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
             }
         });
 
@@ -118,7 +118,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
+                activity.getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
             }
         });
     }

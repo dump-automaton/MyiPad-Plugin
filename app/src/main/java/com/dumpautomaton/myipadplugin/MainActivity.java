@@ -14,6 +14,6 @@ public class MainActivity extends Activity {
         TextView textView = (TextView) findViewById(R.id.textView);
         textView.setText(UtilsForHook.getHardwareInfoWithoutHardware());
 
-        getFragmentManager().beginTransaction().add(android.R.id.content, new PluginPreferenceFragment()).commit();
+        getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
     }
 }
