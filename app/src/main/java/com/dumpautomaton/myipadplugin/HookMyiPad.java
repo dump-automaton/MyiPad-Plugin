@@ -160,11 +160,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     private void hookLockScreen(ClassLoader classLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.teacherpad.LockUnlockScreen", classLoader, "invoke", "com.netspace.library.struct.IMMessage", new XC_MethodReplacement() {
-            @Override
-            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                return false;
-            }
-        });
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.teacherpad.LockUnlockScreen", classLoader, "lockScreen", boolean.class, XC_MethodReplacement.returnConstant(null));
     }
 }
