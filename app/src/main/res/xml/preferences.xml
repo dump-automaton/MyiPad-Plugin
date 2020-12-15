@@ -20,9 +20,6 @@
             android:title="In Private mode (experimental)"
             android:summary="Attempt to block uploading your status"
             android:defaultValue="true"/>
-        <Preference
-            android:key="remove_fragment"
-            android:title="Close"/>
     </PreferenceCategory>
 
     <PreferenceCategory
