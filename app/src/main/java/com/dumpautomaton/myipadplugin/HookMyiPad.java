@@ -49,6 +49,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("in_private", true)) {
                         hookStatusReport(realClassLoader);
                     }
+                    if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
+                        hookLockScreen(realClassLoader);
+                    }
                 }
             });
         }
@@ -154,5 +157,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
 
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
+    }
+
+    private void hookLockScreen(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.teacherpad.LockUnlockScreen", classLoader, "invoke", "com.netspace.library.struct.IMMessage", new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                return false;
+            }
+        });
     }
 }

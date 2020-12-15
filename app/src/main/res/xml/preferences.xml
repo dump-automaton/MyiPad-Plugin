@@ -12,6 +12,10 @@
             android:title="Disable auto update"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="disable_lock_screen"
+            android:title="Disable lock screen"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="cancelable_dialog"
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>
