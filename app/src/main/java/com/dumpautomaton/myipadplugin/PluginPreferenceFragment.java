@@ -65,8 +65,8 @@ public class PluginPreferenceFragment extends PreferenceFragment {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         Intent intent = new Intent();
-                        intent.setClassName(getActivity(), "com.example.app.SecondActivity");
-                        intent.putExtra("MJpegServer", editText.getText());
+                        intent.setClassName(getActivity(), "com.netspace.myipad.ScreenDisplayActivity");
+                        intent.putExtra("MJpegServer", editText.getText().toString());
                         startActivity(intent);
                     }
                 });
