@@ -55,6 +55,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                         hookLockScreen(realClassLoader);
                     }
+                    if (sharedPreferences.getBoolean("disable_useless_service", true)) {
+                        hookDisableTimeLockThread(realClassLoader);
+                    }
                 }
             });
         }
@@ -168,6 +171,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+    }
+
+    private void hookDisableTimeLockThread(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.threads.TimeLockThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 
     private void hookLockScreen(ClassLoader classLoader) {

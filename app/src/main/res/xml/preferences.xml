@@ -16,6 +16,11 @@
             android:title="Disable lock screen"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="disable_useless_service"
+            android:title="Disable useless service"
+            android:summary="Disable services such as time synchronization and usage upload."
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="cancelable_dialog"
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>
