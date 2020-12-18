@@ -47,7 +47,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         hookAutoUpdate(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("in_private", true)) {
-                        hookStatusReport(realClassLoader, app);
+                        hookStatusReport(realClassLoader);
+                    }
+                    if (sharedPreferences.getBoolean("show_direct_im_ip", true)) {
+                        hookShowDirectImIp(realClassLoader, app);
                     }
                     if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                         hookLockScreen(realClassLoader);
@@ -137,19 +140,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
     }
 
-    private void hookStatusReport(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
+    private void hookStatusReport(ClassLoader classLoader) throws ClassNotFoundException {
         Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
-        XposedHelpers.findAndHookMethod(imServiceClz, "reportStatus", String.class, String.class, new XC_MethodReplacement() {
-            @Override
-            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e(TAG, "Catch report:" + param.args[0] + " value :" + param.args[1]);
-                String key = (String)param.args[0];
-                if (key.equalsIgnoreCase("teacherdirectim")) {
-                    Toast.makeText(context, "Enrolled to class. Stream at " + (String)param.args[1], Toast.LENGTH_LONG);
-                }
-                return null;
-            }
-        });
         XposedHelpers.findAndHookMethod(imServiceClz, "reportBasicFields", new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
@@ -161,6 +153,21 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
 
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
+    }
+
+    private void hookShowDirectImIp(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
+        Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
+        XposedHelpers.findAndHookMethod(imServiceClz, "reportStatus", String.class, String.class, new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e(TAG, "Catch report:" + param.args[0] + " value :" + param.args[1]);
+                String key = (String)param.args[0];
+                if (key.equalsIgnoreCase("teacherdirectim")) {
+                    Toast.makeText(context, "Enrolled to class. Stream at " + (String)param.args[1], Toast.LENGTH_LONG).show();
+                }
+                return null;
+            }
+        });
     }
 
     private void hookLockScreen(ClassLoader classLoader) {

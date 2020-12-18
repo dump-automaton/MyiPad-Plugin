@@ -20,6 +20,10 @@
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="show_direct_im_ip"
+            android:title="Show the IP of Class Direct IM"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="in_private"
             android:title="In Private mode (experimental)"
             android:summary="Attempt to block uploading your status"
