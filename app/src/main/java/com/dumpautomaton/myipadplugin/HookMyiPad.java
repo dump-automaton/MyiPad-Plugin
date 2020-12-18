@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
+
 import java.lang.reflect.Method;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;

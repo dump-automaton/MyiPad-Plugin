@@ -1,8 +1,12 @@
-package com.dumpautomaton.myipadplugin;
+package com.dumpautomaton.myipadplugin.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import com.dumpautomaton.myipadplugin.R;
+import com.dumpautomaton.myipadplugin.UtilsForHook;
+import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 
 public class MainActivity extends Activity {
 

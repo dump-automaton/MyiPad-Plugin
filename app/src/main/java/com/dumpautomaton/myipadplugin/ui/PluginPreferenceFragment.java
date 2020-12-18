@@ -1,4 +1,4 @@
-package com.dumpautomaton.myipadplugin;
+package com.dumpautomaton.myipadplugin.ui;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -33,7 +33,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent xmlIntent = new Intent();
-        ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.MainActivity");
+        ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.ui.MainActivity");
         xmlIntent.setComponent(component);
         addPreferencesFromIntent(xmlIntent);
 
