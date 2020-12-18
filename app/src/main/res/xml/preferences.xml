@@ -33,6 +33,10 @@
             android:title="In Private mode (experimental)"
             android:summary="Attempt to block uploading your status"
             android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="teacher_mode"
+            android:title="Teacher Mode (experimental)"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory
