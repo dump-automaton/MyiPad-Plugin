@@ -3,11 +3,14 @@ package com.dumpautomaton.myipadplugin;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.view.View;
+import android.widget.EditText;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,6 +19,7 @@ import de.robv.android.xposed.XposedHelpers;
 
 public class PluginPreferenceFragment extends PreferenceFragment {
     public static Method dumpLogcatMethod;
+    public static String screenCastURL;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -46,6 +50,27 @@ public class PluginPreferenceFragment extends PreferenceFragment {
                         e.printStackTrace();
                     }
                 }
+                return true;
+            }
+        });
+
+        final Preference screenCastPreference = findPreference("screen_cast_with_url");
+        screenCastPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                final EditText editText = new EditText(getActivity());
+                editText.setText(screenCastURL);
+                builder.setTitle("Enter Streaming URL").setView(editText);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Intent intent = new Intent();
+                        intent.setClassName(getActivity(), "com.example.app.SecondActivity");
+                        intent.putExtra("MJpegServer", editText.getText());
+                        startActivity(intent);
+                    }
+                });
+                builder.show();
                 return true;
             }
         });

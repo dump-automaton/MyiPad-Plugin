@@ -36,6 +36,13 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="Utilities">
+        <Preference
+            android:key="screen_cast_with_url"
+            android:title="Screen Cast with URL..."/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="Debug">
         <Preference
             android:key="dump_logcat"

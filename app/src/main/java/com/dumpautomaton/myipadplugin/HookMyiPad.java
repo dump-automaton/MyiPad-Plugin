@@ -166,7 +166,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 Log.e(TAG, "Catch report:" + param.args[0] + " value :" + param.args[1]);
                 String key = (String)param.args[0];
                 if (key.equalsIgnoreCase("teacherdirectim")) {
-                    Toast.makeText(context, "Enrolled to class. Stream at " + (String)param.args[1], Toast.LENGTH_LONG).show();
+                    PluginPreferenceFragment.screenCastURL = (String)param.args[1];
                 }
                 return null;
             }
