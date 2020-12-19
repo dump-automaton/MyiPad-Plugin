@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 
 import java.lang.reflect.Method;
+import java.security.cert.X509Certificate;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -62,6 +63,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     }
                     if (sharedPreferences.getBoolean("teacher_mode", false)) {
                         hookIsTeacher(realClassLoader);
+                    }
+                    if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
+                        hookSslPinning(realClassLoader);
                     }
                 }
             });
@@ -188,5 +192,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     private void hookIsTeacher(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "isTeacher", XC_MethodReplacement.returnConstant(true));
+    }
+
+    private void hookSslPinning(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkClientTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkServerTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
     }
 }

@@ -48,6 +48,9 @@
 
     <PreferenceCategory
         android:title="Debug">
+        <CheckBoxPreference
+            android:key="disable_ssl_pinning"
+            android:title="Disable SSL Pinning"/>
         <Preference
             android:key="dump_logcat"
             android:title="Dump logcat"/>
