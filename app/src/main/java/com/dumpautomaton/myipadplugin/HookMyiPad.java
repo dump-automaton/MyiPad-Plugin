@@ -33,10 +33,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         if (lpparam.packageName.equals("com.netspace.myipad")) {
             XposedBridge.log("[HookMyiPad]getting classLoader...");
-            XposedHelpers.findAndHookMethod("s.h.e.l.l.S", lpparam.classLoader, "onCreate", new XC_MethodHook() {
+            XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
                 @Override
-                protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
-                    Application app = (Application) param.thisObject;
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Log.e(TAG, "Application=" + param.getResult());
+                    Application app = (Application) param.getResult();
                     ClassLoader realClassLoader = app.getClassLoader();
 
                     hookNewActivity(realClassLoader);
