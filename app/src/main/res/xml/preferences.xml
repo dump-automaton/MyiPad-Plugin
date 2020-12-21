@@ -29,6 +29,10 @@
             android:title="Show the IP of Class Direct IM"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="use_external_pdf_viewer"
+            android:title="Use external PDF viewer"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="in_private"
             android:title="In Private mode (experimental)"
             android:summary="Attempt to block uploading your status"
@@ -50,7 +54,8 @@
         android:title="Debug">
         <CheckBoxPreference
             android:key="disable_ssl_pinning"
-            android:title="Disable SSL Pinning"/>
+            android:title="Disable SSL Pinning"
+            android:defaultValue="false"/>
         <Preference
             android:key="dump_logcat"
             android:title="Dump logcat"/>

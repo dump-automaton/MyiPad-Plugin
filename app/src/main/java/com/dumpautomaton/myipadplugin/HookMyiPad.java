@@ -1,5 +1,6 @@
 package com.dumpautomaton.myipadplugin;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 
@@ -66,6 +68,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     }
                     if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
                         hookSslPinning(realClassLoader);
+                    }
+                    if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
+                        hookLaunchPdf(realClassLoader);
                     }
                 }
             });
@@ -197,5 +202,22 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private void hookSslPinning(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkClientTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkServerTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
+    }
+
+    private void hookLaunchPdf(ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> customDocumentViewClz = Class.forName("com.netspace.library.controls.CustomDocumentView", true, classLoader);
+        XposedHelpers.findAndHookMethod(customDocumentViewClz, "launchPDF", String.class, boolean.class, new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                String pdfFullPath = (String) param.args[0];
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.addCategory("android.intent.category.DEFAULT");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Uri uri = Uri.fromFile(new File(pdfFullPath));
+                intent.setDataAndType(uri, "application/pdf");
+                ActivityHook.getCurrentActivity().startActivity(intent);
+                return null;
+            }
+        });
     }
 }
