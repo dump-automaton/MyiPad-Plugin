@@ -3,6 +3,10 @@
 
     <PreferenceCategory
         android:title="MyiPad Tweaks">
+        <EditTextPreference
+            android:key="fake_hardware_info"
+            android:title="Fake hardware info"
+            android:summary="Leave out blank for default."/>
         <CheckBoxPreference
             android:key="disable_mdm"
             android:title="Disable MDM"

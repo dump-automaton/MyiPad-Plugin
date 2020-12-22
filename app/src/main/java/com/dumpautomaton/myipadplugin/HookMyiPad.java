@@ -44,7 +44,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = app.getClassLoader();
 
                     hookNewActivity(realClassLoader);
-                    hookHardwareInfo(realClassLoader);
+                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info", ""));
                     hookAddPluginPreferencesUI(realClassLoader);
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                         hookAlertDialog(realClassLoader);
@@ -88,37 +88,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedBridge.hookMethod(method, new ActivityHook());
     }
 
-    private void hookHardwareInfo(final ClassLoader realClassLoader) throws ClassNotFoundException {
+    private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-        XposedBridge.hookMethod(m, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                final Activity activity = ActivityHook.getCurrentActivity();
-                if (Looper.myLooper() == null) {
-                    Looper.prepare();
-                }
-                String result = UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
-                        (String)param.getResult(), UtilsForHook.getHardwareInfoWithoutHardware(), activity);
-                if (result != null && !result.equals("")) {
-                    activity.runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(activity, "Hooking!", Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-                    try {
-                        param.setResult(result);
-                    } catch (Exception e) {
-                        activity.runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(activity, "Hook failed!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }
-            }
-        });
+        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.getHardwareInfoWithoutHardware() : fakeHardwareInfo));
     }
 
     private void hookAlertDialog(ClassLoader realClassLoader) {
