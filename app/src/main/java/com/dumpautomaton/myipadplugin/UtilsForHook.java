@@ -12,6 +12,13 @@ import android.widget.EditText;
 public class UtilsForHook {
 
     private static String mStringResult;
+    /**
+     * @deprecated Now useless
+     * @param title title of the dialog
+     * @param editString string inserted into the editText
+     * @param defaultString String that will return when Use Default button pressed
+     * @return user's input
+     */
     public static String showSyncEditDialog(Looper looper, String title, String editString, final String defaultString, Context context) {
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new SyncDialogMessageHandler(looper);
@@ -46,6 +53,9 @@ public class UtilsForHook {
     }
 
     private static boolean mResult;
+    /**
+     * @deprecated Now useless
+     */
     public static boolean showSyncBinaryDialog(Looper looper, String title, String message, Context context) {
         // make a handler that throws a runtime exception when a message is received
         final Handler handler = new SyncDialogMessageHandler(looper);

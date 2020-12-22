@@ -43,8 +43,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     }
                     ClassLoader realClassLoader = app.getClassLoader();
 
-                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info", ""));
                     hookAddPluginPreferencesUI(realClassLoader);
+                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info", ""));
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                         hookAlertDialog(realClassLoader);
                     }
@@ -76,7 +76,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             });
         }
     }
-
 
     private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -116,7 +115,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
         Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
         Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
-
         XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
     }
 
@@ -141,7 +139,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
-
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
     }
 
