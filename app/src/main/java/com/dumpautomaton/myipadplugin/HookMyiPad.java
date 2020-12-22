@@ -43,7 +43,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     }
                     ClassLoader realClassLoader = app.getClassLoader();
 
-                    hookNewActivity(realClassLoader);
                     hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info", ""));
                     hookAddPluginPreferencesUI(realClassLoader);
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
@@ -74,7 +73,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         hookSslPinning(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
-                        hookLaunchPdf(realClassLoader);
+                        hookLaunchPdf(realClassLoader, app);
                     }
                 }
             });
@@ -181,7 +180,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkServerTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
     }
 
-    private void hookLaunchPdf(ClassLoader classLoader) throws ClassNotFoundException {
+    private void hookLaunchPdf(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
         Class<?> customDocumentViewClz = Class.forName("com.netspace.library.controls.CustomDocumentView", true, classLoader);
         XposedHelpers.findAndHookMethod(customDocumentViewClz, "launchPDF", String.class, boolean.class, new XC_MethodReplacement() {
             @Override
@@ -192,7 +191,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 Uri uri = Uri.fromFile(new File(pdfFullPath));
                 intent.setDataAndType(uri, "application/pdf");
-                ActivityHook.getCurrentActivity().startActivity(intent);
+                context.startActivity(intent);
                 return null;
             }
         });
