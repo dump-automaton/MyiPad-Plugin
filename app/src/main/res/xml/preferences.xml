@@ -29,10 +29,6 @@
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>
         <CheckBoxPreference
-            android:key="show_direct_im_ip"
-            android:title="Show the IP of Class Direct IM"
-            android:defaultValue="true"/>
-        <CheckBoxPreference
             android:key="use_external_pdf_viewer"
             android:title="Use external PDF viewer"
             android:defaultValue="true"/>

@@ -57,9 +57,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("in_private", true)) {
                         hookStatusReport(realClassLoader);
                     }
-                    if (sharedPreferences.getBoolean("show_direct_im_ip", true)) {
-                        hookShowDirectImIp(realClassLoader, app);
-                    }
                     if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                         hookLockScreen(realClassLoader);
                     }
@@ -80,12 +77,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookNewActivity(ClassLoader realClassLoader) throws ClassNotFoundException {
-        Class<?> instrumentationClass = XposedHelpers.findClass("android.app.Instrumentation", realClassLoader);
-        Method method = XposedHelpers.findMethodExact(instrumentationClass, "newActivity",
-                ClassLoader.class, String.class, Intent.class);
-        XposedBridge.hookMethod(method, new ActivityHook());
-    }
 
     private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
@@ -142,25 +133,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
-
-        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
-
-        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
-    }
-
-    private void hookShowDirectImIp(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
-        Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
         XposedHelpers.findAndHookMethod(imServiceClz, "reportStatus", String.class, String.class, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 Log.e(TAG, "Catch report:" + param.args[0] + " value :" + param.args[1]);
-                String key = (String)param.args[0];
-                if (key.equalsIgnoreCase("teacherdirectim")) {
-                    PluginPreferenceFragment.screenCastURL = (String)param.args[1];
-                }
                 return null;
             }
         });
+        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
+
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
     }
 
     private void hookDisableTimeLockThread(ClassLoader classLoader) {
