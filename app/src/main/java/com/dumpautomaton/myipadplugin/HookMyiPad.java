@@ -72,6 +72,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
                         hookLaunchPdf(realClassLoader, app);
                     }
+                    if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
+                        hookCheckPermission(realClassLoader);
+                    }
                 }
             });
         }
@@ -174,5 +177,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+    }
+
+    private void hookCheckPermission(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "checkPermission", String.class, XC_MethodReplacement.returnConstant(true));
     }
 }

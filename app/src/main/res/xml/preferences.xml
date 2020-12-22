@@ -33,6 +33,10 @@
             android:title="Use external PDF viewer"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="allow_all_permissions"
+            android:title="Allow all permissions"
+            android:defaultValue="false"/>
+        <CheckBoxPreference
             android:key="in_private"
             android:title="In Private mode (experimental)"
             android:summary="Attempt to block uploading your status"
