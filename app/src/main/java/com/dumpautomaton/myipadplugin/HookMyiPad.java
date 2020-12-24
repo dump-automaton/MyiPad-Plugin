@@ -44,7 +44,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = app.getClassLoader();
 
                     hookAddPluginPreferencesUI(realClassLoader);
-                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info", ""));
+                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                         hookAlertDialog(realClassLoader);
                     }

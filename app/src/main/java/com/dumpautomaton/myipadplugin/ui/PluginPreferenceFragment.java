@@ -5,10 +5,12 @@ import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.EditText;
 
@@ -36,6 +38,26 @@ public class PluginPreferenceFragment extends PreferenceFragment {
         ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.ui.MainActivity");
         xmlIntent.setComponent(component);
         addPreferencesFromIntent(xmlIntent);
+
+        final Preference fakeHardwareInfoPreference = findPreference("fake_hardware_info");
+        fakeHardwareInfoPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                final EditText editText = new EditText(getActivity());
+                editText.setHint("Leave out blank for default");
+                builder.setView(editText);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        SharedPreferences sharedPreferences =
+                                PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        sharedPreferences.edit().putString("fake_hardware_info_content", editText.getText().toString()).apply();
+                    }
+                });
+                builder.show();
+                return true;
+            }
+        });
 
         final Preference dumpLogcatPreference = findPreference("dump_logcat");
         dumpLogcatPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
