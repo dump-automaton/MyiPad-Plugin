@@ -49,7 +49,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
                     if (isMyiPad) {
                         if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                            hookELMActivation(app);
+                            try {
+                                hookELMActivation(realClassLoader);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                         if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                             hookLockScreen(realClassLoader);
@@ -86,7 +90,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void addPreferencesUi(ClassLoader classLoader) {
+    private void addPreferencesUi(ClassLoader classLoader) throws ClassNotFoundException {
         PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
         XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new XC_MethodHook() {
             @Override
@@ -123,8 +127,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookELMActivation(Application myipadApp) throws ClassNotFoundException {
-        XposedHelpers.setBooleanField(myipadApp, "mbNeedMDM", false);
+    private void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
+        Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
+        Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
+        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
     }
 
     private void hookAutoUpdate(ClassLoader realClassLoader) {
