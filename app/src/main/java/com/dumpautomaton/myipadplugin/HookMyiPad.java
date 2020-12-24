@@ -1,5 +1,6 @@
 package com.dumpautomaton.myipadplugin;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -7,6 +8,7 @@ import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.dumpautomaton.myipadplugin.ui.MyiPadPluginPreferenceFragment;
@@ -19,7 +21,6 @@ import java.security.cert.X509Certificate;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
@@ -30,7 +31,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private static final int MYIPAD = 1;
     private static final int TEACHERPAD = 2;
     private static int currentApp = UNKNOWN_APP;
-    private static final XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
+    private static SharedPreferences sharedPreferences;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -50,6 +51,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         return;
                     }
                     ClassLoader realClassLoader = app.getClassLoader();
+                    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+
                     addPreferencesUi(realClassLoader);
 
                     if (currentApp == MYIPAD) {
