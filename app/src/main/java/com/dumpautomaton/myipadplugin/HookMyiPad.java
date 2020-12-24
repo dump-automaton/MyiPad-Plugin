@@ -13,10 +13,12 @@ import android.util.Log;
 
 import com.dumpautomaton.myipadplugin.ui.MyiPadPluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
+import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -38,6 +40,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         if (!lpparam.packageName.contains("com.netspace")) {
             return;
         }
+        XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
+                FileIOUtils.writeFileFromString("/storage/emulated/0/MyiPad_Plugin_Crash_" + Calendar.getInstance().getTimeInMillis() + ".txt", stackTraceString);
+            }
+        });
         if (lpparam.packageName.equals("com.netspace.myipad")) {
             currentApp = MYIPAD;
         } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
@@ -59,11 +68,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
                 if (currentApp == MYIPAD) {
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                        try {
-                            hookELMActivation(realClassLoader);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        hookELMActivation(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                         hookLockScreen(realClassLoader);
