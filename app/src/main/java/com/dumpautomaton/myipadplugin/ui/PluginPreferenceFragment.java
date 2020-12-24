@@ -21,7 +21,6 @@ import de.robv.android.xposed.XposedHelpers;
 
 public class PluginPreferenceFragment extends PreferenceFragment {
     public static Method dumpLogcatMethod;
-    public static String screenCastURL;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -66,9 +65,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
                 if (dumpLogcatMethod != null) {
                     try {
                         dumpLogcatMethod.invoke(null, "myipad_logcat.txt");
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 }
@@ -82,7 +79,6 @@ public class PluginPreferenceFragment extends PreferenceFragment {
             public boolean onPreferenceClick(Preference preference) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 final EditText editText = new EditText(getActivity());
-                editText.setText(screenCastURL);
                 builder.setTitle("Enter Streaming URL").setView(editText);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
