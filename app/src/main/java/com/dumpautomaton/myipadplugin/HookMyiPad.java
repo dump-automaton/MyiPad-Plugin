@@ -45,9 +45,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         return;
                     }
                     ClassLoader realClassLoader = app.getClassLoader();
+                    addPreferencesUi(realClassLoader);
 
                     if (isMyiPad) {
-                        hookMyiPadAddPluginPreferencesUI(realClassLoader);
                         if (sharedPreferences.getBoolean("disable_mdm", true)) {
                             hookELMActivation(app);
                         }
@@ -86,6 +86,28 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
+    private void addPreferencesUi(ClassLoader classLoader) {
+        PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
+        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) param.thisObject;
+                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
+            }
+        });
+
+        if (isMyiPad) {
+            Class<?> settingsActivityClz = Class.forName("com.netspace.myipad.SettingsActivity", true, classLoader);
+            XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Activity activity = (Activity) param.thisObject;
+                    activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
+                }
+            });
+        }
+    }
+
     private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
@@ -97,26 +119,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 return param.thisObject;
-            }
-        });
-    }
-
-    private void hookMyiPadAddPluginPreferencesUI(final ClassLoader realClassLoader) throws ClassNotFoundException {
-        PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", realClassLoader, "dumpLogcatToFile", String.class);
-        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
-            }
-        });
-
-        Class<?> settingsActivityClz = Class.forName("com.netspace.myipad.SettingsActivity", true, realClassLoader);
-        XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
             }
         });
     }
