@@ -35,69 +35,70 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        if (lpparam.packageName.contains("com.netspace")) {
-            if (lpparam.packageName.equals("com.netspace.myipad")) {
-                currentApp = MYIPAD;
-            } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
-                currentApp = TEACHERPAD;
-            }
-            XposedBridge.log("[HookMyiPad]currentApp = " + currentApp);
-            XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    Log.e(TAG, "Application=" + param.getResult());
-                    Application app = (Application) param.getResult();
-                    if (!app.getClass().getName().contains("com.netspace")) {
-                        return;
-                    }
-                    ClassLoader realClassLoader = app.getClassLoader();
-                    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+        if (!lpparam.packageName.contains("com.netspace")) {
+            return;
+        }
+        if (lpparam.packageName.equals("com.netspace.myipad")) {
+            currentApp = MYIPAD;
+        } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
+            currentApp = TEACHERPAD;
+        }
+        XposedBridge.log("[HookMyiPad]currentApp = " + currentApp);
+        XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e(TAG, "Application=" + param.getResult());
+                Application app = (Application) param.getResult();
+                if (!app.getClass().getName().contains("com.netspace")) {
+                    return;
+                }
+                ClassLoader realClassLoader = app.getClassLoader();
+                sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
-                    addPreferencesUi(realClassLoader);
+                addPreferencesUi(realClassLoader);
 
-                    if (currentApp == MYIPAD) {
-                        if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                            try {
-                                hookELMActivation(realClassLoader);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
-                            hookLockScreen(realClassLoader);
-                        }
-                        if (sharedPreferences.getBoolean("disable_useless_service", true)) {
-                            hookDisableTimeLockThread(realClassLoader);
-                        }
-                        if (sharedPreferences.getBoolean("in_private", true)) {
-                            hookStatusReport(realClassLoader);
-                        }
-                        if (sharedPreferences.getBoolean("teacher_mode", false)) {
-                            hookIsTeacher(realClassLoader);
+                if (currentApp == MYIPAD) {
+                    if (sharedPreferences.getBoolean("disable_mdm", true)) {
+                        try {
+                            hookELMActivation(realClassLoader);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
-
-                    if (sharedPreferences.getBoolean("fake_hardware_info", true)) {
-                        hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
+                    if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
+                        hookLockScreen(realClassLoader);
                     }
-                    if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
-                        hookAlertDialog(realClassLoader);
+                    if (sharedPreferences.getBoolean("disable_useless_service", true)) {
+                        hookDisableTimeLockThread(realClassLoader);
                     }
-                    if (sharedPreferences.getBoolean("disable_auto_update", true)) {
-                        hookAutoUpdate(realClassLoader);
+                    if (sharedPreferences.getBoolean("in_private", true)) {
+                        hookStatusReport(realClassLoader);
                     }
-                    if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
-                        hookSslPinning(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
-                        hookLaunchPdf(realClassLoader, app);
-                    }
-                    if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
-                        hookCheckPermission(realClassLoader);
+                    if (sharedPreferences.getBoolean("teacher_mode", false)) {
+                        hookIsTeacher(realClassLoader);
                     }
                 }
-            });
-        }
+
+                if (sharedPreferences.getBoolean("fake_hardware_info", true)) {
+                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
+                }
+                if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
+                    hookAlertDialog(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("disable_auto_update", true)) {
+                    hookAutoUpdate(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
+                    hookSslPinning(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
+                    hookLaunchPdf(realClassLoader, app);
+                }
+                if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
+                    hookCheckPermission(realClassLoader);
+                }
+            }
+        });
     }
 
     private void addPreferencesUi(ClassLoader classLoader) throws ClassNotFoundException {
