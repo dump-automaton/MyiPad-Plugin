@@ -2,15 +2,14 @@ package com.dumpautomaton.myipadplugin;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 
 import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.dumpautomaton.myipadplugin.ui.MyiPadPluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 
 import java.io.File;
@@ -27,11 +26,15 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
     private static final String TAG = "HookMyiPad";
+    private static boolean isMyiPad = false;
     private static final XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        if (lpparam.packageName.equals("com.netspace.myipad")) {
+        if (lpparam.packageName.contains("com.netspace")) {
+            if (lpparam.packageName.equals("com.netspace.myipad")) {
+                isMyiPad = true;
+            }
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
                 @Override
@@ -43,28 +46,31 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     }
                     ClassLoader realClassLoader = app.getClassLoader();
 
-                    hookAddPluginPreferencesUI(realClassLoader);
+                    if (isMyiPad) {
+                        hookMyiPadAddPluginPreferencesUI(realClassLoader);
+                        if (sharedPreferences.getBoolean("disable_mdm", true)) {
+                            hookELMActivation(app);
+                        }
+                        if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
+                            hookLockScreen(realClassLoader);
+                        }
+                        if (sharedPreferences.getBoolean("disable_useless_service", true)) {
+                            hookDisableTimeLockThread(realClassLoader);
+                        }
+                        if (sharedPreferences.getBoolean("in_private", true)) {
+                            hookStatusReport(realClassLoader);
+                        }
+                        if (sharedPreferences.getBoolean("teacher_mode", false)) {
+                            hookIsTeacher(realClassLoader);
+                        }
+                    }
+
                     hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                         hookAlertDialog(realClassLoader);
                     }
-                    if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                        hookELMActivation(app);
-                    }
                     if (sharedPreferences.getBoolean("disable_auto_update", true)) {
                         hookAutoUpdate(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("in_private", true)) {
-                        hookStatusReport(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
-                        hookLockScreen(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("disable_useless_service", true)) {
-                        hookDisableTimeLockThread(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("teacher_mode", false)) {
-                        hookIsTeacher(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
                         hookSslPinning(realClassLoader);
@@ -95,13 +101,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookAddPluginPreferencesUI(final ClassLoader realClassLoader) throws ClassNotFoundException {
+    private void hookMyiPadAddPluginPreferencesUI(final ClassLoader realClassLoader) throws ClassNotFoundException {
         PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", realClassLoader, "dumpLogcatToFile", String.class);
         XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", realClassLoader, "onStart", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
+                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
             }
         });
 
@@ -110,7 +116,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
-                activity.getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
+                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
             }
         });
     }

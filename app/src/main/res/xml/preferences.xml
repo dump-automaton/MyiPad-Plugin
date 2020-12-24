@@ -24,7 +24,9 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="MyiPad Tweaks">
+        android:key="myipad_tweaks"
+        android:title="MyiPad Tweaks"
+        android:enabled="false">
         <CheckBoxPreference
             android:key="disable_mdm"
             android:title="Disable MDM"
