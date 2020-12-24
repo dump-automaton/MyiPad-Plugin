@@ -40,7 +40,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
                 currentApp = TEACHERPAD;
             }
-            XposedBridge.log("[HookMyiPad]getting classLoader...");
+            XposedBridge.log("[HookMyiPad]currentApp = " + currentApp);
             XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -74,7 +74,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         }
                     }
 
-                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
+                    if (sharedPreferences.getBoolean("fake_hardware_info", true)) {
+                        hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
+                    }
                     if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                         hookAlertDialog(realClassLoader);
                     }

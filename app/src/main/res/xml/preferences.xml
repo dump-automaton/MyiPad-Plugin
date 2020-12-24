@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="General Tweaks">
-        <Preference
+        <CheckBoxPreference
             android:key="fake_hardware_info"
             android:title="Fake hardware info"/>
         <CheckBoxPreference

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -38,10 +39,10 @@ public class PluginPreferenceFragment extends PreferenceFragment {
         xmlIntent.setComponent(component);
         addPreferencesFromIntent(xmlIntent);
 
-        final Preference fakeHardwareInfoPreference = findPreference("fake_hardware_info");
-        fakeHardwareInfoPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        final CheckBoxPreference fakeHardwareInfoPreference = (CheckBoxPreference) findPreference("fake_hardware_info");
+        fakeHardwareInfoPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceChange(Preference preference, Object object) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 final EditText editText = new EditText(getActivity());
                 editText.setHint("Leave out blank for default");
