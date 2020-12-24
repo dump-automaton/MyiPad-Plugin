@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.dumpautomaton.myipadplugin.ui.MyiPadPluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
@@ -33,6 +34,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private static final int MYIPAD = 1;
     private static final int TEACHERPAD = 2;
     private static int currentApp = UNKNOWN_APP;
+    private static boolean isSafeMode = false;
     private static SharedPreferences sharedPreferences;
 
     @Override
@@ -45,6 +47,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
                 FileIOUtils.writeFileFromString("/storage/emulated/0/MyiPad_Plugin_Crash_" + Calendar.getInstance().getTimeInMillis() + ".txt", stackTraceString);
+                FileIOUtils.writeFileFromString("/storage/emulated/0/plugin_safe_mode.txt", "delete me to exit safe mode");
             }
         });
         if (lpparam.packageName.equals("com.netspace.myipad")) {
@@ -65,6 +68,12 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
                 addPreferencesUi(realClassLoader);
+
+                File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
+                if (safeModeFile.exists()) {
+                    isSafeMode = true;
+                    return;
+                }
 
                 if (currentApp == MYIPAD) {
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
@@ -112,6 +121,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
+                if (isSafeMode) {
+                    Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+                }
                 activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
             }
         });
@@ -128,6 +140,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     Activity activity = (Activity) param.thisObject;
+                    if (isSafeMode) {
+                        Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+                    }
                     activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
                 }
             });
