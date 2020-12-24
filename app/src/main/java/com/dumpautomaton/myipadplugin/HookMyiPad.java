@@ -26,14 +26,19 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
     private static final String TAG = "HookMyiPad";
-    private static boolean isMyiPad = false;
+    private static final int UNKNOWN_APP = 0;
+    private static final int MYIPAD = 1;
+    private static final int TEACHERPAD = 2;
+    private static int currentApp = UNKNOWN_APP;
     private static final XSharedPreferences sharedPreferences = new XSharedPreferences("com.netspace.myipad");
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         if (lpparam.packageName.contains("com.netspace")) {
             if (lpparam.packageName.equals("com.netspace.myipad")) {
-                isMyiPad = true;
+                currentApp = MYIPAD;
+            } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
+                currentApp = TEACHERPAD;
             }
             XposedBridge.log("[HookMyiPad]getting classLoader...");
             XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
@@ -47,7 +52,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = app.getClassLoader();
                     addPreferencesUi(realClassLoader);
 
-                    if (isMyiPad) {
+                    if (currentApp == MYIPAD) {
                         if (sharedPreferences.getBoolean("disable_mdm", true)) {
                             try {
                                 hookELMActivation(realClassLoader);
@@ -100,8 +105,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
 
-        if (isMyiPad) {
-            Class<?> settingsActivityClz = Class.forName("com.netspace.myipad.SettingsActivity", true, classLoader);
+        if (currentApp != 0) {
+            String settingsActivityClzName = "";
+            if (currentApp == MYIPAD) {
+                settingsActivityClzName = "com.netspace.myipad.SettingsActivity";
+            } else if (currentApp == TEACHERPAD) {
+                settingsActivityClzName = "com.netspace.teacherpad.SettingsActivity";
+            }
+            Class<?> settingsActivityClz = Class.forName(settingsActivityClzName, true, classLoader);
             XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
