@@ -1,27 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
     <PreferenceCategory
-        android:title="MyiPad Tweaks">
+        android:title="General Tweaks">
         <Preference
             android:key="fake_hardware_info"
             android:title="Fake hardware info"/>
         <CheckBoxPreference
-            android:key="disable_mdm"
-            android:title="Disable MDM"
-            android:defaultValue="true"/>
-        <CheckBoxPreference
             android:key="disable_auto_update"
             android:title="Disable auto update"
-            android:defaultValue="true"/>
-        <CheckBoxPreference
-            android:key="disable_lock_screen"
-            android:title="Disable lock screen"
-            android:defaultValue="true"/>
-        <CheckBoxPreference
-            android:key="disable_useless_service"
-            android:title="Disable useless service"
-            android:summary="Disable services such as time synchronization and usage upload."
             android:defaultValue="true"/>
         <CheckBoxPreference
             android:key="cancelable_dialog"
@@ -35,6 +21,23 @@
             android:key="allow_all_permissions"
             android:title="Allow all permissions"
             android:defaultValue="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="MyiPad Tweaks">
+        <CheckBoxPreference
+            android:key="disable_mdm"
+            android:title="Disable MDM"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="disable_lock_screen"
+            android:title="Disable lock screen"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="disable_useless_service"
+            android:title="Disable useless service"
+            android:summary="Disable services such as time synchronization and usage upload."
+            android:defaultValue="true"/>
         <CheckBoxPreference
             android:key="in_private"
             android:title="In Private mode (experimental)"
