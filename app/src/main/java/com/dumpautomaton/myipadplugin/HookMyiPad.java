@@ -39,11 +39,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedBridge.hookMethod(m, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                if (Looper.myLooper() == null) {
-                    Looper.prepare();
-                }
-                return UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
-                        UtilsForHook.getHardwareInfoWithoutHardware(), UtilsForHook.getHardwareInfoWithoutHardware(), context);
+                return UtilsForHook.showSyncEditDialog("Plugin", UtilsForHook.getHardwareInfoWithoutHardware(), context);
             }
         });
     }

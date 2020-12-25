@@ -12,9 +12,12 @@ import android.widget.EditText;
 public class UtilsForHook {
 
     private static String mStringResult;
-    public static String showSyncEditDialog(Looper looper, String title, String editString, final String defaultString, Context context) {
+    public static String showSyncEditDialog(String title, String editString, Context context) {
+        if (Looper.myLooper() == null) {
+            Looper.prepare();
+        }
         // make a handler that throws a runtime exception when a message is received
-        final Handler handler = new SyncDialogMessageHandler(looper);
+        final Handler handler = new SyncDialogMessageHandler(Looper.myLooper());
         // make a text input dialog and show it
         final EditText editText = new EditText(context);
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
@@ -27,14 +30,6 @@ public class UtilsForHook {
         });
         if (editString != null) {
             editText.setText(editString);
-        }
-        if (defaultString != null) {
-            alert.setNeutralButton("Use Default", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    mStringResult = defaultString;
-                    handler.sendMessage(handler.obtainMessage());
-                }
-            });
         }
         alert.show();
         // loop till a runtime exception is triggered.
