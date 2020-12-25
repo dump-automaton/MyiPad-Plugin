@@ -3,6 +3,7 @@ package com.dumpautomaton.myipadplugin;
 import android.app.Application;
 import android.content.Context;
 import android.os.Looper;
+import android.widget.Toast;
 
 import java.lang.reflect.Method;
 
@@ -28,6 +29,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = app.getClassLoader();
                     hookHardwareInfo(realClassLoader, app);
                     hookAlertDialog(realClassLoader);
+                    hookMDMInit(realClassLoader, app);
                 }
             });
         }
@@ -51,5 +53,17 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return param.thisObject;
             }
         });
+    }
+
+    private void hookMDMInit(ClassLoader classLoader, final Application myiPadApp) throws ClassNotFoundException {
+        XposedHelpers.findAndHookConstructor("com.netspace.myipad.plugins.knox.KnoxPlugin", classLoader, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                throw new RuntimeException();
+            }
+        });
+        Class<?> clazz = classLoader.loadClass("com.netspace.library.utilities.Utilities");
+        Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
+        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
     }
 }
