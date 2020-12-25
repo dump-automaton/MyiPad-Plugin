@@ -2,8 +2,6 @@ package com.dumpautomaton.myipadplugin;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Looper;
-import android.widget.Toast;
 
 import java.lang.reflect.Method;
 
@@ -29,7 +27,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     ClassLoader realClassLoader = app.getClassLoader();
                     hookHardwareInfo(realClassLoader, app);
                     hookAlertDialog(realClassLoader);
-                    hookMDMInit(realClassLoader, app);
+                    hookSkipElm(realClassLoader);
                 }
             });
         }
@@ -38,12 +36,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private void hookHardwareInfo(final ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-        XposedBridge.hookMethod(m, new XC_MethodReplacement() {
-            @Override
-            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                return UtilsForHook.showSyncEditDialog("Plugin", UtilsForHook.getHardwareInfoWithoutHardware(), context);
-            }
-        });
+        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(UtilsForHook.getHardwareInfoWithoutHardware()));
     }
 
     private void hookAlertDialog(ClassLoader realClassLoader) {
@@ -55,13 +48,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookMDMInit(ClassLoader classLoader, final Application myiPadApp) throws ClassNotFoundException {
-        XposedHelpers.findAndHookConstructor("com.netspace.myipad.plugins.knox.KnoxPlugin", classLoader, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                throw new RuntimeException();
-            }
-        });
+    private void hookSkipElm(ClassLoader classLoader) throws ClassNotFoundException {
         Class<?> clazz = classLoader.loadClass("com.netspace.library.utilities.Utilities");
         Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
         XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
