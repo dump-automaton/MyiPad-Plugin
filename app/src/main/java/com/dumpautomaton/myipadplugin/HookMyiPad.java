@@ -36,17 +36,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private void hookHardwareInfo(final ClassLoader realClassLoader, final Context context) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-        XposedBridge.hookMethod(m, new XC_MethodHook() {
+        XposedBridge.hookMethod(m, new XC_MethodReplacement() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 if (Looper.myLooper() == null) {
                     Looper.prepare();
                 }
-                String result = UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
-                        (String) param.getResult(), UtilsForHook.getHardwareInfoWithoutHardware(), context);
-                if (result != null && !result.equals("")) {
-                    param.setResult(result);
-                }
+                return UtilsForHook.showSyncEditDialog(Looper.myLooper(), "Plugin",
+                        UtilsForHook.getHardwareInfoWithoutHardware(), UtilsForHook.getHardwareInfoWithoutHardware(), context);
             }
         });
     }
