@@ -33,13 +33,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private static final int UNKNOWN_APP = 0;
     private static final int MYIPAD = 1;
     private static final int TEACHERPAD = 2;
+    private static final int MYIMANAGER = 3;
     private static int currentApp = UNKNOWN_APP;
     private static boolean isSafeMode = false;
     private static SharedPreferences sharedPreferences;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        if (!lpparam.packageName.contains("com.netspace")) {
+        if (!lpparam.packageName.startsWith("com.netspace")) {
             return;
         }
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
@@ -54,6 +55,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             currentApp = MYIPAD;
         } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
             currentApp = TEACHERPAD;
+        } else if (lpparam.packageName.equals("com.netspace.myimanager")) {
+            currentApp = MYIMANAGER;
         }
         XposedBridge.log("[HookMyiPad]currentApp = " + currentApp);
         XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
@@ -61,7 +64,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Log.e(TAG, "Application=" + param.getResult());
                 Application app = (Application) param.getResult();
-                if (!app.getClass().getName().contains("com.netspace")) {
+                if (!app.getClass().getName().startsWith("com.netspace")) {
                     return;
                 }
                 ClassLoader realClassLoader = app.getClassLoader();
@@ -152,7 +155,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
-        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.getHardwareInfoWithoutHardware() : fakeHardwareInfo));
+        if (currentApp == MYIPAD){
+            XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.getHardwareInfoWithoutHardware() : fakeHardwareInfo));
+        } else if (currentApp == TEACHERPAD) {
+            XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.getHardwareInfoWithoutHardware() : fakeHardwareInfo));
+        } else if (currentApp == MYIMANAGER) {
+            XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.generateMyiManagerHardwareKey() : fakeHardwareInfo));
+        }
+
     }
 
     private void hookAlertDialog(ClassLoader realClassLoader) {
