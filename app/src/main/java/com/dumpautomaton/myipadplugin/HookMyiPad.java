@@ -40,7 +40,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        XposedBridge.log("lpparam.packageName = " + lpparam.packageName);
+        //XposedBridge.log("lpparam.packageName = " + lpparam.packageName);
         if (!lpparam.packageName.startsWith("com.netspace")) {
             return;
         }
@@ -71,7 +71,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 ClassLoader realClassLoader = app.getClassLoader();
                 sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
-                addPreferencesUi(realClassLoader);
+                if (currentApp == MYIPAD || currentApp == TEACHERPAD) {
+                    addPreferencesUi(realClassLoader);
+                }
 
                 File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
                 if (safeModeFile.exists()) {
