@@ -40,7 +40,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
-        XposedBridge.log("lpparam.packageName = " + lpparam.packageName)
+        XposedBridge.log("lpparam.packageName = " + lpparam.packageName);
         if (!lpparam.packageName.startsWith("com.netspace")) {
             return;
         }
