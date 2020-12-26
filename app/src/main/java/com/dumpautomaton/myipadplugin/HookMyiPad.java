@@ -243,5 +243,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     private void hookCheckPermission(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "checkPermission", String.class, XC_MethodReplacement.returnConstant(true));
+        XposedHelpers.findAndHookMethod("com.netspace.library.threads.LoadExamDataThread3", classLoader, "addParam", String.class, Object.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String szParamName = (String) param.args[0];
+                if (szParamName.equals("lpszClientID")) {
+                    param.setResult(null);
+                }
+            }
+        });
     }
 }
