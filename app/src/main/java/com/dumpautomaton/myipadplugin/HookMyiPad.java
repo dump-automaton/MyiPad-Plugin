@@ -171,7 +171,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     void hookAlertDialog(ClassLoader realClassLoader) {
-        XposedHelpers.findAndHookMethod("androidx.appcompat.app.AlertDialog.Builder", realClassLoader, "setCancelable", boolean.class, new XC_MethodReplacement() {
+        XposedHelpers.findAndHookMethod("android.app.Dialog", realClassLoader, "setCancelable", boolean.class, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
                 return param.thisObject;
