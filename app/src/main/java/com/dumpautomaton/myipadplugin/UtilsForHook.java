@@ -3,13 +3,24 @@ package com.dumpautomaton.myipadplugin;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.widget.EditText;
 
+import java.io.File;
+
 @SuppressWarnings("CatchMayIgnoreException")
 public class UtilsForHook {
+
+    public static File getSafeModeTxtFile() {
+        return new File(Environment.getExternalStorageDirectory(), "plugin_safe_mode.txt");
+    }
+
+    public static boolean isSafeMode() {
+        return getSafeModeTxtFile().exists();
+    }
 
     private static String mStringResult;
     /**

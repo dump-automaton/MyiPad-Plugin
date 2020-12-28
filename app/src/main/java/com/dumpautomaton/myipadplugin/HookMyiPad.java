@@ -36,15 +36,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         TEACHERPAD
     }
     private static final String TAG = "HookMyiPad";
-    private static boolean isSafeMode = false;
+    private static boolean safeMode = false;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         if (!lpparam.packageName.contains("com.netspace")) {
             return;
         }
-        File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
-        isSafeMode = safeModeFile.exists();
+        safeMode = UtilsForHook.isSafeMode();
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -74,7 +73,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
                 addPreferencesUi(realClassLoader, currentAppType);
 
-                if (isSafeMode) {
+                if (safeMode) {
                     return;
                 }
 
@@ -129,7 +128,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         @Override
         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
             Activity activity = (Activity) param.thisObject;
-            if (isSafeMode) {
+            if (safeMode) {
                 Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
             }
             PreferenceFragment preferenceFragment;

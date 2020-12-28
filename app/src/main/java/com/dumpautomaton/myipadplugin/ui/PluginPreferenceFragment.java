@@ -1,24 +1,25 @@
 package com.dumpautomaton.myipadplugin.ui;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.view.View;
 import android.widget.EditText;
 
+import com.dumpautomaton.myipadplugin.UtilsForHook;
+import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import de.robv.android.xposed.XposedHelpers;
 
 public class PluginPreferenceFragment extends PreferenceFragment {
     public static Method dumpLogcatMethod;
@@ -38,6 +39,19 @@ public class PluginPreferenceFragment extends PreferenceFragment {
         ComponentName component = new ComponentName("com.dumpautomaton.myipadplugin", "com.dumpautomaton.myipadplugin.ui.MainActivity");
         xmlIntent.setComponent(component);
         addPreferencesFromIntent(xmlIntent);
+
+        final SwitchPreference safeModePreference = (SwitchPreference) findPreference("safe_mode");
+        safeModePreference.setChecked(UtilsForHook.isSafeMode());
+        safeModePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object object) {
+                boolean checked = (boolean) object;
+                if (checked) {
+                    FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
+                    return true;
+                } else return UtilsForHook.getSafeModeTxtFile().delete();
+            }
+        });
 
         final CheckBoxPreference fakeHardwareInfoPreference = (CheckBoxPreference) findPreference("fake_hardware_info");
         fakeHardwareInfoPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
