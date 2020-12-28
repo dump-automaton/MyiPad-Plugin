@@ -21,6 +21,11 @@
             android:key="allow_all_permissions"
             android:title="Allow all permissions"
             android:defaultValue="false"/>
+        <CheckBoxPreference
+            android:key="high_api_version_compatibility"
+            android:title="High API version compatibility"
+            android:summary="Try to prevent crash on Android P or above."
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory

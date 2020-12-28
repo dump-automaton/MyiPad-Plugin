@@ -113,11 +113,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
                     hookCheckPermission(realClassLoader);
                 }
+                if (sharedPreferences.getBoolean("high_api_version_compatibility", false)) {
+                    hookForHighApi(realClassLoader);
+                }
             }
         });
     }
 
-    private void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
+    void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
         if (currentAppType == CurrentAppType.UNKNOWN) {
             return;
         } else {
@@ -152,13 +155,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         }
     }
 
-    private void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
+    void hookHardwareInfo(final ClassLoader realClassLoader, String fakeHardwareInfo) throws ClassNotFoundException {
         final Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.HardwareInfo");
         Method m = XposedHelpers.findMethodExact(clazz, "getHardwareInfo", Context.class);
         XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(fakeHardwareInfo.equals("") ? UtilsForHook.getHardwareInfoWithoutHardware() : fakeHardwareInfo));
     }
 
-    private void hookAlertDialog(ClassLoader realClassLoader) {
+    void hookAlertDialog(ClassLoader realClassLoader) {
         XposedHelpers.findAndHookMethod("androidx.appcompat.app.AlertDialog.Builder", realClassLoader, "setCancelable", boolean.class, new XC_MethodReplacement() {
             @Override
             protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
@@ -167,17 +170,17 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
+    void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
         Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
         Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
         XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
     }
 
-    private void hookAutoUpdate(ClassLoader realClassLoader) {
+    void hookAutoUpdate(ClassLoader realClassLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
     }
 
-    private void hookStatusReport(ClassLoader classLoader) throws ClassNotFoundException {
+    void hookStatusReport(ClassLoader classLoader) throws ClassNotFoundException {
         Class<?> imServiceClz = Class.forName("com.netspace.library.im.IMService", true, classLoader);
         XposedHelpers.findAndHookMethod(imServiceClz, "reportBasicFields", new XC_MethodReplacement() {
             @Override
@@ -197,24 +200,24 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
     }
 
-    private void hookDisableTimeLockThread(ClassLoader classLoader) {
+    void hookDisableTimeLockThread(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.myipad.threads.TimeLockThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 
-    private void hookLockScreen(ClassLoader classLoader) {
+    void hookLockScreen(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.teacherpad.LockUnlockScreen", classLoader, "lockScreen", boolean.class, XC_MethodReplacement.returnConstant(null));
     }
 
-    private void hookIsTeacher(ClassLoader classLoader) {
+    void hookIsTeacher(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "isTeacher", XC_MethodReplacement.returnConstant(true));
     }
 
-    private void hookSslPinning(ClassLoader classLoader) {
+    void hookSslPinning(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkClientTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.SSLConnection$_FakeX509TrustManager", classLoader, "checkServerTrusted", X509Certificate[].class, String.class, XC_MethodReplacement.returnConstant(null));
     }
 
-    private void hookLaunchPdf(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
+    void hookLaunchPdf(ClassLoader classLoader, final Context context) throws ClassNotFoundException {
         Class<?> customDocumentViewClz = Class.forName("com.netspace.library.controls.CustomDocumentView", true, classLoader);
         XposedHelpers.findAndHookMethod(customDocumentViewClz, "launchPDF", String.class, boolean.class, new XC_MethodReplacement() {
             @Override
@@ -231,7 +234,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void hookCheckPermission(ClassLoader classLoader) {
+    void hookCheckPermission(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "checkPermission", String.class, XC_MethodReplacement.returnConstant(true));
+    }
+
+    void hookForHighApi(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.activity.AccountConfigActivity$ResourceTestThreads", classLoader, "run", new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) XposedHelpers.getObjectField(param.thisObject, "this$0");
+                activity.runOnUiThread((Runnable) XposedHelpers.getObjectField(activity, "mSuccessRunnable"));
+                return null;
+            }
+        });
     }
 }
