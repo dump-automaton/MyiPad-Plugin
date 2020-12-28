@@ -8,6 +8,7 @@ import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Environment;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -48,8 +49,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
-                FileIOUtils.writeFileFromString("/storage/emulated/0/MyiPad_Plugin_Crash_" + Calendar.getInstance().getTimeInMillis() + ".txt", stackTraceString);
-                FileIOUtils.writeFileFromString("/storage/emulated/0/plugin_safe_mode.txt", "delete me to exit safe mode");
+                FileIOUtils.writeFileFromString(new File(Environment.getExternalStorageDirectory(), "MyiPad_Plugin_Crash_" + Calendar.getInstance().getTimeInMillis() + ".txt"), stackTraceString);
+                FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
             }
         });
         XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {

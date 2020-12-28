@@ -9,7 +9,8 @@
         android:title="General Tweaks">
         <CheckBoxPreference
             android:key="fake_hardware_info"
-            android:title="Fake hardware info"/>
+            android:title="Fake hardware info"
+            android:defaultValue="true"/>
         <CheckBoxPreference
             android:key="disable_auto_update"
             android:title="Disable auto update"
