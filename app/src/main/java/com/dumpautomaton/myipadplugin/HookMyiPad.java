@@ -29,17 +29,22 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 public class HookMyiPad implements IXposedHookLoadPackage {
+    enum CurrentAppType {
+        UNKNOWN,
+        MYIPAD,
+        TEACHERPAD
+    }
     private static final String TAG = "HookMyiPad";
-    private static final int UNKNOWN_APP = 0;
-    private static final int MYIPAD = 1;
-    private static final int TEACHERPAD = 2;
-    private static int currentApp = UNKNOWN_APP;
     private static boolean isSafeMode = false;
-    private static SharedPreferences sharedPreferences;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
         if (!lpparam.packageName.contains("com.netspace")) {
+            return;
+        }
+        File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
+        if (safeModeFile.exists()) {
+            isSafeMode = true;
             return;
         }
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
@@ -50,32 +55,28 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 FileIOUtils.writeFileFromString("/storage/emulated/0/plugin_safe_mode.txt", "delete me to exit safe mode");
             }
         });
-        if (lpparam.packageName.equals("com.netspace.myipad")) {
-            currentApp = MYIPAD;
-        } else if (lpparam.packageName.equals("com.netspace.teacherpad")) {
-            currentApp = TEACHERPAD;
-        }
-        XposedBridge.log("[HookMyiPad]currentApp = " + currentApp);
         XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e(TAG, "Application=" + param.getResult());
+                Log.e(TAG, "newApplication=" + param.getResult());
                 Application app = (Application) param.getResult();
                 if (!app.getClass().getName().contains("com.netspace")) {
                     return;
                 }
-                ClassLoader realClassLoader = app.getClassLoader();
-                sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
-                addPreferencesUi(realClassLoader);
-
-                File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
-                if (safeModeFile.exists()) {
-                    isSafeMode = true;
-                    return;
+                CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
+                if (app.getPackageName().equals("com.netspace.myipad")) {
+                    currentAppType = CurrentAppType.MYIPAD;
+                } else if (app.getPackageName().equals("com.netspace.teacherpad")) {
+                    currentAppType = CurrentAppType.TEACHERPAD;
                 }
 
-                if (currentApp == MYIPAD) {
+                ClassLoader realClassLoader = app.getClassLoader();
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+
+                addPreferencesUi(realClassLoader, currentAppType);
+
+                if (currentAppType == CurrentAppType.MYIPAD) {
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
                         hookELMActivation(realClassLoader);
                     }
@@ -115,24 +116,25 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private void addPreferencesUi(ClassLoader classLoader) throws ClassNotFoundException {
-        PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
-        XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Activity activity = (Activity) param.thisObject;
-                if (isSafeMode) {
-                    Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+    private void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
+        if (currentAppType == CurrentAppType.UNKNOWN) {
+            return;
+        } else {
+            PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
+            XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Activity activity = (Activity) param.thisObject;
+                    if (isSafeMode) {
+                        Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+                    }
+                    activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
                 }
-                activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
-            }
-        });
-
-        if (currentApp != 0) {
+            });
             String settingsActivityClzName = "";
-            if (currentApp == MYIPAD) {
+            if (currentAppType == CurrentAppType.MYIPAD) {
                 settingsActivityClzName = "com.netspace.myipad.SettingsActivity";
-            } else if (currentApp == TEACHERPAD) {
+            } else if (currentAppType == CurrentAppType.TEACHERPAD) {
                 settingsActivityClzName = "com.netspace.teacherpad.SettingsActivity";
             }
             Class<?> settingsActivityClz = Class.forName(settingsActivityClzName, true, classLoader);
