@@ -43,10 +43,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             return;
         }
         File safeModeFile = new File("/storage/emulated/0/plugin_safe_mode.txt");
-        if (safeModeFile.exists()) {
-            isSafeMode = true;
-            return;
-        }
+        isSafeMode = safeModeFile.exists();
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -75,6 +72,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
                 addPreferencesUi(realClassLoader, currentAppType);
+
+                if (isSafeMode) {
+                    return;
+                }
 
                 if (currentAppType == CurrentAppType.MYIPAD) {
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
