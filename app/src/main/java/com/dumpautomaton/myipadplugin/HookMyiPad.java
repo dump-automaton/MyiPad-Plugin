@@ -8,6 +8,7 @@ import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -120,21 +121,38 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
+    private static class AddPreferenceHookCallback extends XC_MethodHook {
+        private final CurrentAppType currentAppType;
+        public AddPreferenceHookCallback(CurrentAppType currentAppType) {
+            this.currentAppType = currentAppType;
+        }
+        @Override
+        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            Activity activity = (Activity) param.thisObject;
+            if (isSafeMode) {
+                Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+            }
+            PreferenceFragment preferenceFragment;
+            switch (currentAppType) {
+                case MYIPAD:
+                    preferenceFragment = new MyiPadPluginPreferenceFragment();
+                    break;
+                case TEACHERPAD:
+                    preferenceFragment = new PluginPreferenceFragment();
+                    break;
+                default:
+                    return;
+            }
+            activity.getFragmentManager().beginTransaction().add(preferenceFragment, "pref").commit();
+        }
+    }
+
     void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
         if (currentAppType == CurrentAppType.UNKNOWN) {
             return;
         } else {
             PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
-            XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    Activity activity = (Activity) param.thisObject;
-                    if (isSafeMode) {
-                        Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
-                    }
-                    activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
-                }
-            });
+            XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new AddPreferenceHookCallback(currentAppType));
             String settingsActivityClzName = "";
             if (currentAppType == CurrentAppType.MYIPAD) {
                 settingsActivityClzName = "com.netspace.myipad.SettingsActivity";
@@ -142,16 +160,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 settingsActivityClzName = "com.netspace.teacherpad.SettingsActivity";
             }
             Class<?> settingsActivityClz = Class.forName(settingsActivityClzName, true, classLoader);
-            XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    Activity activity = (Activity) param.thisObject;
-                    if (isSafeMode) {
-                        Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
-                    }
-                    activity.getFragmentManager().beginTransaction().add(new MyiPadPluginPreferenceFragment(), "pref").commit();
-                }
-            });
+            XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new AddPreferenceHookCallback(currentAppType));
         }
     }
 
