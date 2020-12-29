@@ -121,30 +121,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    private static class AddPreferenceHookCallback extends XC_MethodHook {
-        private final CurrentAppType currentAppType;
-        public AddPreferenceHookCallback(CurrentAppType currentAppType) {
-            this.currentAppType = currentAppType;
-        }
-        @Override
-        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            Activity activity = (Activity) param.thisObject;
-            if (safeMode) {
-                Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+    void hookAddPreferencesUiOnCreateActivity(String activityClzName, ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> activityClz = Class.forName(activityClzName, true, classLoader);
+        XposedHelpers.findAndHookMethod(activityClz, "onCreate", Bundle.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Activity activity = (Activity) param.thisObject;
+                if (safeMode) {
+                    Toast.makeText(activity, "Currently in safe mode. No hooks will be applied.", Toast.LENGTH_LONG).show();
+                }
+                activity.getFragmentManager().beginTransaction().add(new PluginPreferenceFragment(), "pref").commit();
             }
-            PreferenceFragment preferenceFragment;
-            switch (currentAppType) {
-                case MYIPAD:
-                    preferenceFragment = new MyiPadPluginPreferenceFragment();
-                    break;
-                case TEACHERPAD:
-                    preferenceFragment = new PluginPreferenceFragment();
-                    break;
-                default:
-                    return;
-            }
-            activity.getFragmentManager().beginTransaction().add(preferenceFragment, "pref").commit();
-        }
+        });
     }
 
     void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
@@ -152,15 +140,12 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             return;
         } else {
             PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
-            XposedHelpers.findAndHookMethod("com.netspace.library.activity.WifiConfigActivity", classLoader, "onStart", new AddPreferenceHookCallback(currentAppType));
-            String settingsActivityClzName = "";
+            hookAddPreferencesUiOnCreateActivity("com.netspace.library.activity.WifiConfigActivity", classLoader);
             if (currentAppType == CurrentAppType.MYIPAD) {
-                settingsActivityClzName = "com.netspace.myipad.SettingsActivity";
+                hookAddPreferencesUiOnCreateActivity("com.netspace.myipad.SettingsActivity", classLoader);
             } else if (currentAppType == CurrentAppType.TEACHERPAD) {
-                settingsActivityClzName = "com.netspace.teacherpad.SettingsActivity";
+                hookAddPreferencesUiOnCreateActivity("com.netspace.teacherpad.SettingsActivity", classLoader);
             }
-            Class<?> settingsActivityClz = Class.forName(settingsActivityClzName, true, classLoader);
-            XposedHelpers.findAndHookMethod(settingsActivityClz, "onCreate", Bundle.class, new AddPreferenceHookCallback(currentAppType));
         }
     }
 
