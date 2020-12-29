@@ -9,12 +9,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.dumpautomaton.myipadplugin.ui.MyiPadPluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
 
