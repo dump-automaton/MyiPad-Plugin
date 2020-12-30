@@ -84,7 +84,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                         hookLockScreen(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("disable_useless_service", true)) {
-                        hookDisableTimeLockThread(realClassLoader);
+                        hookDisableUselessThread(realClassLoader);
                     }
                     if (sharedPreferences.getBoolean("in_private", true)) {
                         hookStatusReport(realClassLoader);
@@ -190,9 +190,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatus", XC_MethodReplacement.returnConstant(""));
     }
 
-    void hookDisableTimeLockThread(ClassLoader classLoader) {
+    void hookDisableUselessThread(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.threads.UsageDataUploadThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.myipad.threads.TimeLockThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 
