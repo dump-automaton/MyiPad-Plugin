@@ -36,6 +36,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
     private static final String TAG = "HookMyiPad";
     private static boolean safeMode = false;
+    private static boolean runInVxp = false;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -43,6 +44,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             return;
         }
         safeMode = UtilsForHook.isSafeMode();
+        if (System.getProperty("vxp") != null) {
+            runInVxp = true;
+        }
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -73,6 +77,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 addPreferencesUi(realClassLoader, currentAppType);
 
                 if (safeMode) {
+                    if (runInVxp) {
+                        try {
+                            hookBackgroundPatcher(realClassLoader);
+                            sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
+                        } catch (Exception e) {
+                            sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
+                        }
+                    }
                     return;
                 }
 
@@ -114,6 +126,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
                 if (sharedPreferences.getBoolean("high_api_version_compatibility", false)) {
                     hookForHighApi(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("compatibility_with_vx", false)) {
+                    hookBackgroundPatcher(realClassLoader);
                 }
             }
         });
@@ -241,5 +256,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+    }
+
+    void hookBackgroundPatcher(ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> backgroundPatcherClz = classLoader.loadClass("com.netspace.library.upgrade.BackgroundPatcher");
+        XposedHelpers.findAndHookMethod(backgroundPatcherClz, "start", XC_MethodReplacement.returnConstant(null));
     }
 }

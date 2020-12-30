@@ -32,6 +32,10 @@
             android:title="High API version compatibility"
             android:summary="Try to prevent crash on Android P or above."
             android:defaultValue="false"/>
+        <CheckBoxPreference
+            android:key="compatibility_with_vx"
+            android:title="Compatibility with VirtualXposed"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory
