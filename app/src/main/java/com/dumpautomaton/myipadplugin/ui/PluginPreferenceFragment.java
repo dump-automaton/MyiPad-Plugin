@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.dumpautomaton.myipadplugin.UtilsForHook;
 import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
@@ -66,6 +67,34 @@ public class PluginPreferenceFragment extends PreferenceFragment {
                         SharedPreferences sharedPreferences =
                                 PreferenceManager.getDefaultSharedPreferences(getActivity());
                         sharedPreferences.edit().putString("fake_hardware_info_content", editText.getText().toString()).apply();
+                    }
+                });
+                builder.show();
+                return true;
+            }
+        });
+
+        final CheckBoxPreference fakeVersionPreference = (CheckBoxPreference) findPreference("fake_version");
+        fakeVersionPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object object) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                LinearLayout linearLayout = new LinearLayout(getActivity());
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+                linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+                final EditText versionCodeEdit = new EditText(getActivity());
+                final EditText versionNameEdit = new EditText(getActivity());
+                versionCodeEdit.setHint("Version Code");
+                versionNameEdit.setHint("Version Name");
+                linearLayout.addView(versionCodeEdit);
+                linearLayout.addView(versionNameEdit);
+                builder.setView(linearLayout);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        SharedPreferences sharedPreferences =
+                                PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        sharedPreferences.edit().putString("fake_version_code", versionCodeEdit.getText().toString()).apply();
+                        sharedPreferences.edit().putString("fake_version_name", versionNameEdit.getText().toString()).apply();
                     }
                 });
                 builder.show();
