@@ -127,6 +127,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
                     hookCheckPermission(realClassLoader);
                 }
+                if (sharedPreferences.getBoolean("fake_version", true)) {
+                    hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
+                }
             }
         });
     }
@@ -258,5 +261,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     void hookBackgroundPatcher(ClassLoader classLoader) throws ClassNotFoundException {
         Class<?> backgroundPatcherClz = classLoader.loadClass("com.netspace.library.upgrade.BackgroundPatcher");
         XposedHelpers.findAndHookMethod(backgroundPatcherClz, "start", XC_MethodReplacement.returnConstant(null));
+    }
+
+    void hookVersionName(ClassLoader classLoader, String fakeVersionName) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.HardwareInfo", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.Utilities", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
     }
 }
