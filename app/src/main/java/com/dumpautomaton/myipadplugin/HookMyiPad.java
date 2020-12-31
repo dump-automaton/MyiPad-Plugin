@@ -115,7 +115,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
                     hookAlertDialog(realClassLoader);
                 }
-                if (sharedPreferences.getBoolean("disable_auto_update", true)) {
+                if (sharedPreferences.getBoolean("disable_auto_update", false)) {
                     hookAutoUpdate(realClassLoader);
                 }
                 if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
@@ -211,6 +211,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     void hookDisableUselessThread(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.threads.UsageDataUploadThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.myipad.threads.TimeLockThread", classLoader, "run", XC_MethodReplacement.returnConstant(null));
+        XposedHelpers.findAndHookMethod("com.netspace.library.threads.MessageWaitThread2", classLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 
     void hookLockScreen(ClassLoader classLoader) {

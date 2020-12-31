@@ -25,7 +25,7 @@
         <CheckBoxPreference
             android:key="disable_auto_update"
             android:title="Disable auto update"
-            android:defaultValue="true"/>
+            android:defaultValue="false"/>
         <CheckBoxPreference
             android:key="cancelable_dialog"
             android:title="Make all dialog cancelable"
