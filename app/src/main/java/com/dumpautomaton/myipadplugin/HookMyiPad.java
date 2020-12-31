@@ -36,6 +36,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
     private static final String TAG = "HookMyiPad";
     private static boolean safeMode = false;
+    private static boolean runInVxp = false;
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
@@ -43,6 +44,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             return;
         }
         safeMode = UtilsForHook.isSafeMode();
+        if (System.getProperty("vxp") != null) {
+            runInVxp = true;
+        }
         XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -70,7 +74,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 ClassLoader realClassLoader = app.getClassLoader();
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
+                // [essential] hook for preferences ui
                 addPreferencesUi(realClassLoader, currentAppType);
+                // [essential] hook for compatibility
+                if (runInVxp || sharedPreferences.getBoolean("compatibility_with_vx", false)) {
+                    try {
+                        hookBackgroundPatcher(realClassLoader);
+                        hookForHighApi(realClassLoader);
+                        sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
+                    } catch (Exception e) {
+                        sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
+                    }
+                }
 
                 if (safeMode) {
                     return;
@@ -111,9 +126,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
                 if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
                     hookCheckPermission(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("high_api_version_compatibility", false)) {
-                    hookForHighApi(realClassLoader);
                 }
             }
         });
@@ -241,5 +253,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 return null;
             }
         });
+    }
+
+    void hookBackgroundPatcher(ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> backgroundPatcherClz = classLoader.loadClass("com.netspace.library.upgrade.BackgroundPatcher");
+        XposedHelpers.findAndHookMethod(backgroundPatcherClz, "start", XC_MethodReplacement.returnConstant(null));
     }
 }

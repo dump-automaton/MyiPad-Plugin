@@ -3,8 +3,15 @@
     <SwitchPreference
         android:key="safe_mode"
         android:title="Safe Mode"
-        android:summary="Hooks will not take effect in safe mode."
+        android:summary="Tweaks will not take effect in safe mode."
         android:defaultValue="false"/>
+    <PreferenceCategory
+        android:title="Compatibility">
+        <CheckBoxPreference
+            android:key="compatibility_with_vx"
+            android:title="Compatibility with VirtualXposed"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
     <PreferenceCategory
         android:title="General Tweaks">
         <CheckBoxPreference
@@ -26,11 +33,6 @@
         <CheckBoxPreference
             android:key="allow_all_permissions"
             android:title="Allow all permissions"
-            android:defaultValue="false"/>
-        <CheckBoxPreference
-            android:key="high_api_version_compatibility"
-            android:title="High API version compatibility"
-            android:summary="Try to prevent crash on Android P or above."
             android:defaultValue="false"/>
     </PreferenceCategory>
 
