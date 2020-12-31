@@ -80,6 +80,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 if (runInVxp || sharedPreferences.getBoolean("compatibility_with_vx", false)) {
                     try {
                         hookBackgroundPatcher(realClassLoader);
+                        hookForHighApi(realClassLoader);
                         sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
                     } catch (Exception e) {
                         sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
@@ -125,9 +126,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
                 if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
                     hookCheckPermission(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("high_api_version_compatibility", false)) {
-                    hookForHighApi(realClassLoader);
                 }
             }
         });
