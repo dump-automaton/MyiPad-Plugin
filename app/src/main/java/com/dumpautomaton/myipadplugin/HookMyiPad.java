@@ -52,7 +52,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
-                FileIOUtils.writeFileFromString(new File(Environment.getExternalStorageDirectory(), "MyiPad_Plugin_Crash_" + Calendar.getInstance().getTimeInMillis() + ".txt"), stackTraceString);
+                FileIOUtils.writeFileFromString(new File(Environment.getExternalStorageDirectory(), "MyiPad_Plugin_Crash_" + System.currentTimeMillis() + ".txt"), stackTraceString);
                 FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
             }
         });
@@ -132,7 +132,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
                 }
                 if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
-                    hookFakeWifiInfo(realClassLoader, 0x01020304, "null");
+                    int randomIpSuffix = (int) (System.currentTimeMillis() % 0xFFFF);
+                    int fakeWifiIp = (randomIpSuffix * 0x10000) + 0xA8C0;
+                    hookFakeWifiInfo(realClassLoader, fakeWifiIp, "null");
                 }
             }
         });
