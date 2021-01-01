@@ -184,7 +184,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     void hookAutoUpdate(ClassLoader realClassLoader) {
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "CompareVersion", String.class, String.class, XC_MethodReplacement.returnConstant(0));
+        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.MyiUpdate2", realClassLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 
     void hookStatusReport(ClassLoader classLoader) throws ClassNotFoundException {
@@ -206,6 +206,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod("com.netspace.library.struct.UserInfo", classLoader, "UserScore", String.class, String.class, XC_MethodReplacement.returnConstant(null));
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatusJson", XC_MethodReplacement.returnConstant("{}"));
         XposedHelpers.findAndHookMethod("com.netspace.myipad.im.handles.everyone.Status", classLoader, "getStatus", XC_MethodReplacement.returnConstant(""));
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.im.WmIMThread", classLoader, "updateStatus", String.class, String.class, XC_MethodReplacement.returnConstant(null));
     }
 
     void hookDisableUselessThread(ClassLoader classLoader) {
