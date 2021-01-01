@@ -27,6 +27,10 @@
             android:title="Disable auto update"
             android:defaultValue="true"/>
         <CheckBoxPreference
+            android:key="fake_wifi_info"
+            android:title="Fake wifi info"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="cancelable_dialog"
             android:title="Make all dialog cancelable"
             android:defaultValue="true"/>

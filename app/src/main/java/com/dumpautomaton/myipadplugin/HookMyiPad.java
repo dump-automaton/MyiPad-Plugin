@@ -2,6 +2,7 @@ package com.dumpautomaton.myipadplugin;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 
 import android.app.Application;
@@ -129,6 +130,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
                 if (sharedPreferences.getBoolean("fake_version", true)) {
                     hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
+                }
+                if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
+                    hookFakeWifiInfo(realClassLoader, "null", "null");
                 }
             }
         });
@@ -267,5 +271,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     void hookVersionName(ClassLoader classLoader, String fakeVersionName) {
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.HardwareInfo", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
         XposedHelpers.findAndHookMethod("com.netspace.library.utilities.Utilities", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
+    }
+
+    void hookFakeWifiInfo(ClassLoader classLoader, String fakeWifiIp, String fakeWifiSsid) {
+        XposedHelpers.findAndHookMethod(WifiInfo.class, "getIpAddress", XC_MethodReplacement.returnConstant(fakeWifiIp));
+        XposedHelpers.findAndHookMethod(WifiInfo.class, "getSSID", XC_MethodReplacement.returnConstant(fakeWifiSsid));
+        XposedHelpers.findAndHookMethod(WifiInfo.class, "getHardwareAddress", XC_MethodReplacement.returnConstant(null));
     }
 }
