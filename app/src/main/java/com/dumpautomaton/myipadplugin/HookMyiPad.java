@@ -20,7 +20,6 @@ import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -80,8 +79,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 // [essential] hook for compatibility
                 if (runInVxp || sharedPreferences.getBoolean("compatibility_with_vx", false)) {
                     try {
-                        hookBackgroundPatcher(realClassLoader);
                         hookForHighApi(realClassLoader);
+                        hookBackgroundPatcher(realClassLoader);
                         sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
                     } catch (Exception e) {
                         sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
@@ -132,8 +131,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                     hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
                 }
                 if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
-                    int randomIpSuffix = (int) (System.currentTimeMillis() % 0xFFFF);
-                    int fakeWifiIp = (randomIpSuffix * 0x10000) + 0xA8C0;
+                    int randomIpSuffix = (int) (System.currentTimeMillis() % 0xFF);
+                    int fakeWifiIp = (randomIpSuffix * 0x1000000) + 0x01A8C0;
                     hookFakeWifiInfo(realClassLoader, fakeWifiIp, "null");
                 }
             }
