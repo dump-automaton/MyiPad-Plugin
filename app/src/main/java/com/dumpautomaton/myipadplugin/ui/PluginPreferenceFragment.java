@@ -59,7 +59,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object object) {
                 if (!((boolean) object)) {
-                    return false;
+                    return true;
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 final EditText editText = new EditText(getActivity());
@@ -82,7 +82,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object object) {
                 if (!((boolean) object)) {
-                    return false;
+                    return true;
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 LinearLayout linearLayout = new LinearLayout(getActivity());

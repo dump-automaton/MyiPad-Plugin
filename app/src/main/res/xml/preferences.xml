@@ -42,6 +42,10 @@
             android:key="allow_all_permissions"
             android:title="Allow all permissions"
             android:defaultValue="false"/>
+        <CheckBoxPreference
+            android:key="disable_im"
+            android:title="Disable IM Service"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory

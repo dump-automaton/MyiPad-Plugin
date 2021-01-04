@@ -133,6 +133,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
                     hookFakeWifiInfo("null");
                 }
+                if (sharedPreferences.getBoolean("disable_im", true)) {
+                    hookDisableMessage(realClassLoader);
+                }
             }
         });
     }
@@ -283,6 +286,10 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             }
         });
         XposedHelpers.findAndHookMethod(WifiInfo.class, "getSSID", XC_MethodReplacement.returnConstant(fakeWifiSsid));
-        XposedHelpers.findAndHookMethod(WifiInfo.class, "getHardwareAddress", XC_MethodReplacement.returnConstant(null));
+        XposedHelpers.findAndHookMethod(WifiInfo.class, "getMacAddress", XC_MethodReplacement.returnConstant(null));
+    }
+
+    void hookDisableMessage(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.library.threads.MessageWaitThread2", classLoader, "run", XC_MethodReplacement.returnConstant(null));
     }
 }
