@@ -58,6 +58,9 @@ public class PluginPreferenceFragment extends PreferenceFragment {
         fakeHardwareInfoPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object object) {
+                if (!((boolean) object)) {
+                    return false;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 final EditText editText = new EditText(getActivity());
                 editText.setHint("Leave out blank for default");
@@ -78,6 +81,9 @@ public class PluginPreferenceFragment extends PreferenceFragment {
         fakeVersionPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object object) {
+                if (!((boolean) object)) {
+                    return false;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 LinearLayout linearLayout = new LinearLayout(getActivity());
                 linearLayout.setOrientation(LinearLayout.VERTICAL);
