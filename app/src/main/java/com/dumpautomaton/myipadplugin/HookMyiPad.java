@@ -291,5 +291,12 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     void hookDisableMessage(ClassLoader classLoader) {
         XposedHelpers.findAndHookMethod("com.netspace.library.threads.MessageWaitThread2", classLoader, "run", XC_MethodReplacement.returnConstant(null));
+        XposedHelpers.findAndHookConstructor("com.netspace.library.im.IMHttpTransportLayer", classLoader, Context.class, String.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                XposedHelpers.setObjectField(param.thisObject, "mMonitorRunnable", UtilsForHook.doNothingRunnable);
+                XposedHelpers.setObjectField(param.thisObject, "mReconnectRunnable", UtilsForHook.doNothingRunnable);
+            }
+        });
     }
 }

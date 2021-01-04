@@ -14,6 +14,12 @@ import java.io.File;
 @SuppressWarnings("CatchMayIgnoreException")
 public class UtilsForHook {
 
+    public static final Runnable doNothingRunnable = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
+
     public static File getSafeModeTxtFile() {
         return new File(Environment.getExternalStorageDirectory(), "plugin_safe_mode.txt");
     }
