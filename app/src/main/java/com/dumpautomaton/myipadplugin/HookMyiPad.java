@@ -93,7 +93,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
                 if (currentAppType == CurrentAppType.MYIPAD) {
                     if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                        hookELMActivation(realClassLoader);
+                        hookELMActivation(app);
                     }
                     if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                         hookLockScreen(realClassLoader);
@@ -183,10 +183,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    void hookELMActivation(ClassLoader realClassLoader) throws ClassNotFoundException {
-        Class<?> clazz = realClassLoader.loadClass("com.netspace.library.utilities.Utilities");
-        Method m = XposedHelpers.findMethodExact(clazz, "isSkipELMCheck");
-        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(true));
+    void hookELMActivation(Application myiApp) throws ClassNotFoundException {
+        XposedHelpers.setBooleanField(myiApp, "mbNeedMDM", false);
     }
 
     void hookAutoUpdate(ClassLoader realClassLoader) {
