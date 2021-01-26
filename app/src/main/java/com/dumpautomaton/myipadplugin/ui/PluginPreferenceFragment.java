@@ -91,7 +91,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
                 final EditText versionCodeEdit = new EditText(getActivity());
                 final EditText versionNameEdit = new EditText(getActivity());
                 versionCodeEdit.setHint("Version Code (Deprecated)");
-                versionNameEdit.setHint("Version Name (Default: 5.2.3.52405)");
+                versionNameEdit.setText("5.2.3.52405");
                 linearLayout.addView(versionCodeEdit);
                 linearLayout.addView(versionNameEdit);
                 builder.setView(linearLayout);
