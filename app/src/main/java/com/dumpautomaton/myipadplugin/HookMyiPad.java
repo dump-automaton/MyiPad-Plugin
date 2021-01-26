@@ -269,7 +269,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod(backgroundPatcherClz, "start", XC_MethodReplacement.returnConstant(null));
     }
 
-    void hookVersionName(ClassLoader classLoader, String fakeVersionName) {
+    void hookVersionName(ClassLoader classLoader, final String fakeVersionName) {
         XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager", classLoader, "getPackageInfo", String.class, int.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
