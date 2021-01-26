@@ -9,6 +9,7 @@ import android.app.Application;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -183,7 +184,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    void hookELMActivation(Application myiApp) throws ClassNotFoundException {
+    void hookELMActivation(Application myiApp) {
         XposedHelpers.setBooleanField(myiApp, "mbNeedMDM", false);
     }
 
@@ -269,8 +270,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     }
 
     void hookVersionName(ClassLoader classLoader, String fakeVersionName) {
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.HardwareInfo", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
-        XposedHelpers.findAndHookMethod("com.netspace.library.utilities.Utilities", classLoader, "getVersionName", Context.class, XC_MethodReplacement.returnConstant(fakeVersionName));
+        XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager", classLoader, "getPackageInfo", String.class, int.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                PackageInfo pi = (PackageInfo) param.getResult();
+                pi.versionName = fakeVersionName;
+            }
+        });
     }
 
     void hookFakeWifiInfo(String fakeWifiSsid) {
