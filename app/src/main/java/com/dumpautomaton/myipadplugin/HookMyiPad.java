@@ -33,7 +33,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     enum CurrentAppType {
         UNKNOWN,
         MYIPAD,
-        TEACHERPAD
+        TEACHERPAD,
+        MANAGER
     }
     private static final String TAG = "HookMyiPad";
     private static boolean safeMode = false;
@@ -66,10 +67,16 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 }
 
                 CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
-                if (app.getPackageName().equals("com.netspace.myipad")) {
-                    currentAppType = CurrentAppType.MYIPAD;
-                } else if (app.getPackageName().equals("com.netspace.teacherpad")) {
-                    currentAppType = CurrentAppType.TEACHERPAD;
+                switch (app.getPackageName()) {
+                    case "com.netspace.myipad":
+                        currentAppType = CurrentAppType.MYIPAD;
+                        break;
+                    case "com.netspace.teacherpad":
+                        currentAppType = CurrentAppType.TEACHERPAD;
+                        break;
+                    case "com.netspace.myimanager":
+                        currentAppType = CurrentAppType.MANAGER;
+                        break;
                 }
 
                 ClassLoader realClassLoader = app.getClassLoader();
@@ -165,6 +172,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 hookAddPreferencesUiOnCreateActivity("com.netspace.myipad.SettingsActivity", classLoader);
             } else if (currentAppType == CurrentAppType.TEACHERPAD) {
                 hookAddPreferencesUiOnCreateActivity("com.netspace.teacherpad.SettingsActivity", classLoader);
+            } else if (currentAppType == CurrentAppType.MANAGER) {
+                hookAddPreferencesUiOnCreateActivity("com.netspace.myimanager.LoginActivity", classLoader);
             }
         }
     }
