@@ -165,6 +165,9 @@ public class HookMyiPad implements IXposedHookLoadPackage {
     void addPreferencesUi(ClassLoader classLoader, CurrentAppType currentAppType) throws ClassNotFoundException {
         if (currentAppType == CurrentAppType.UNKNOWN) {
             return;
+        }
+        if (currentAppType == CurrentAppType.MANAGER) {
+            hookAddPreferencesUiOnCreateActivity("com.netspace.myimanager.LoginActivity", classLoader);
         } else {
             PluginPreferenceFragment.dumpLogcatMethod = XposedHelpers.findMethodExact("com.netspace.library.utilities.Utilities", classLoader, "dumpLogcatToFile", String.class);
             hookAddPreferencesUiOnCreateActivity("com.netspace.library.activity.WifiConfigActivity", classLoader);
@@ -172,8 +175,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 hookAddPreferencesUiOnCreateActivity("com.netspace.myipad.SettingsActivity", classLoader);
             } else if (currentAppType == CurrentAppType.TEACHERPAD) {
                 hookAddPreferencesUiOnCreateActivity("com.netspace.teacherpad.SettingsActivity", classLoader);
-            } else if (currentAppType == CurrentAppType.MANAGER) {
-                hookAddPreferencesUiOnCreateActivity("com.netspace.myimanager.LoginActivity", classLoader);
             }
         }
     }
