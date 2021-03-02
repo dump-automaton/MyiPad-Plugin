@@ -66,8 +66,11 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             Log.e(TAG, "newApplication=" + param.getResult());
             Application app = (Application) param.getResult();
             String appName = app.getClass().getName();
-            if (!appName.contains("com.netspace") || appName.contains("Tinker")) {
+            if (!appName.contains("com.netspace")) {
                 return;
+            }
+            if (appName.contains("Tinker")) {
+                XposedHelpers.findAndHookMethod(app.getClass(), "createDelegate", Application.class, int.class, String.class, boolean.class, long.class, long.class, Intent.class, new AppCreateHookCallback());
             }
 
             CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
