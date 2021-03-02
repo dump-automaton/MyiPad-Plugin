@@ -57,96 +57,98 @@ public class HookMyiPad implements IXposedHookLoadPackage {
                 FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
             }
         });
-        XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e(TAG, "newApplication=" + param.getResult());
-                Application app = (Application) param.getResult();
-                String appName = app.getClass().getName();
-                if (!appName.contains("com.netspace") || appName.contains("Tinker")) {
-                    return;
-                }
+        XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new AppCreateHookCallback());
+    }
 
-                CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
-                switch (app.getPackageName()) {
-                    case "com.netspace.myipad":
-                        currentAppType = CurrentAppType.MYIPAD;
-                        break;
-                    case "com.netspace.teacherpad":
-                        currentAppType = CurrentAppType.TEACHERPAD;
-                        break;
-                    case "com.netspace.myimanager":
-                        currentAppType = CurrentAppType.MANAGER;
-                        break;
-                }
+    public class AppCreateHookCallback extends XC_MethodHook {
+        @Override
+        protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+            Log.e(TAG, "newApplication=" + param.getResult());
+            Application app = (Application) param.getResult();
+            String appName = app.getClass().getName();
+            if (!appName.contains("com.netspace") || appName.contains("Tinker")) {
+                return;
+            }
 
-                ClassLoader realClassLoader = app.getClassLoader();
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+            CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
+            switch (app.getPackageName()) {
+                case "com.netspace.myipad":
+                    currentAppType = CurrentAppType.MYIPAD;
+                    break;
+                case "com.netspace.teacherpad":
+                    currentAppType = CurrentAppType.TEACHERPAD;
+                    break;
+                case "com.netspace.myimanager":
+                    currentAppType = CurrentAppType.MANAGER;
+                    break;
+            }
 
-                // [essential] hook for preferences ui
-                addPreferencesUi(realClassLoader, currentAppType);
-                // [essential] hook for compatibility
-                if (runInVxp || sharedPreferences.getBoolean("compatibility_with_vx", false)) {
-                    try {
-                        hookForHighApi(realClassLoader);
-                        hookBackgroundPatcher(realClassLoader);
-                        sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
-                    } catch (Exception e) {
-                        sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
-                    }
-                }
+            ClassLoader realClassLoader = app.getClassLoader();
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
 
-                if (safeMode) {
-                    return;
-                }
-
-                if (currentAppType == CurrentAppType.MYIPAD) {
-                    if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                        hookELMActivation(app);
-                    }
-                    if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
-                        hookLockScreen(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("disable_useless_service", true)) {
-                        hookDisableUselessThread(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("in_private", true)) {
-                        hookStatusReport(realClassLoader);
-                    }
-                    if (sharedPreferences.getBoolean("teacher_mode", false)) {
-                        hookIsTeacher(realClassLoader);
-                    }
-                }
-
-                if (sharedPreferences.getBoolean("fake_hardware_info", true)) {
-                    hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
-                }
-                if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
-                    hookAlertDialog(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("disable_auto_update", true)) {
-                    hookAutoUpdate(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
-                    hookSslPinning(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
-                    hookLaunchPdf(realClassLoader, app);
-                }
-                if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
-                    hookCheckPermission(realClassLoader);
-                }
-                if (sharedPreferences.getBoolean("fake_version", true)) {
-                    hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
-                }
-                if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
-                    hookFakeWifiInfo("null");
-                }
-                if (sharedPreferences.getBoolean("disable_im", true)) {
-                    hookDisableMessage(realClassLoader);
+            // [essential] hook for preferences ui
+            addPreferencesUi(realClassLoader, currentAppType);
+            // [essential] hook for compatibility
+            if (runInVxp || sharedPreferences.getBoolean("compatibility_with_vx", false)) {
+                try {
+                    hookForHighApi(realClassLoader);
+                    hookBackgroundPatcher(realClassLoader);
+                    sharedPreferences.edit().putBoolean("compatibility_with_vx", true).commit();
+                } catch (Exception e) {
+                    sharedPreferences.edit().putBoolean("compatibility_with_vx", false).commit();
                 }
             }
-        });
+
+            if (safeMode) {
+                return;
+            }
+
+            if (currentAppType == CurrentAppType.MYIPAD) {
+                if (sharedPreferences.getBoolean("disable_mdm", true)) {
+                    hookELMActivation(app);
+                }
+                if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
+                    hookLockScreen(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("disable_useless_service", true)) {
+                    hookDisableUselessThread(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("in_private", true)) {
+                    hookStatusReport(realClassLoader);
+                }
+                if (sharedPreferences.getBoolean("teacher_mode", false)) {
+                    hookIsTeacher(realClassLoader);
+                }
+            }
+
+            if (sharedPreferences.getBoolean("fake_hardware_info", true)) {
+                hookHardwareInfo(realClassLoader, sharedPreferences.getString("fake_hardware_info_content", ""));
+            }
+            if (sharedPreferences.getBoolean("cancelable_dialog", true)) {
+                hookAlertDialog(realClassLoader);
+            }
+            if (sharedPreferences.getBoolean("disable_auto_update", true)) {
+                hookAutoUpdate(realClassLoader);
+            }
+            if (sharedPreferences.getBoolean("disable_ssl_pinning", false)) {
+                hookSslPinning(realClassLoader);
+            }
+            if (sharedPreferences.getBoolean("use_external_pdf_viewer", false)) {
+                hookLaunchPdf(realClassLoader, app);
+            }
+            if (sharedPreferences.getBoolean("allow_all_permissions", false)) {
+                hookCheckPermission(realClassLoader);
+            }
+            if (sharedPreferences.getBoolean("fake_version", true)) {
+                hookVersionName(realClassLoader, sharedPreferences.getString("fake_version_name", "5.2.3.52405"));
+            }
+            if (sharedPreferences.getBoolean("fake_wifi_info", true)) {
+                hookFakeWifiInfo("null");
+            }
+            if (sharedPreferences.getBoolean("disable_im", true)) {
+                hookDisableMessage(realClassLoader);
+            }
+        }
     }
 
     void hookAddPreferencesUiOnCreateActivity(String activityClzName, ClassLoader classLoader) throws ClassNotFoundException {
