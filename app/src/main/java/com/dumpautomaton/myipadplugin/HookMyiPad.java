@@ -62,7 +62,8 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Log.e(TAG, "newApplication=" + param.getResult());
                 Application app = (Application) param.getResult();
-                if (!app.getClass().getName().contains("com.netspace")) {
+                String appName = app.getClass().getName();
+                if (!appName.contains("com.netspace") || appName.contains("Tinker")) {
                     return;
                 }
 
