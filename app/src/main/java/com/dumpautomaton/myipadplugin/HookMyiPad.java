@@ -69,9 +69,6 @@ public class HookMyiPad implements IXposedHookLoadPackage {
             if (!appName.contains("com.netspace")) {
                 return;
             }
-            if (appName.contains("Tinker")) {
-                XposedHelpers.findAndHookMethod(app.getClass(), "createDelegate", Application.class, int.class, String.class, boolean.class, long.class, long.class, Intent.class, new AppCreateHookCallback());
-            }
 
             CurrentAppType currentAppType = CurrentAppType.UNKNOWN;
             switch (app.getPackageName()) {
@@ -108,7 +105,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
             if (currentAppType == CurrentAppType.MYIPAD) {
                 if (sharedPreferences.getBoolean("disable_mdm", true)) {
-                    hookELMActivation(app);
+                    hookELMActivation(realClassLoader);
                 }
                 if (sharedPreferences.getBoolean("disable_lock_screen", true)) {
                     hookLockScreen(realClassLoader);
@@ -200,8 +197,13 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         });
     }
 
-    void hookELMActivation(Application myiApp) {
-        XposedHelpers.setBooleanField(myiApp, "mbNeedMDM", false);
+    void hookELMActivation(ClassLoader classLoader) {
+        XposedHelpers.findAndHookMethod("com.netspace.myipad.MyiPadApplication", classLoader, "onCreate", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                XposedHelpers.setBooleanField(param.thisObject, "mbNeedMDM", false);
+            }
+        });
     }
 
     void hookAutoUpdate(ClassLoader realClassLoader) {
