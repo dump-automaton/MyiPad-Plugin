@@ -7,10 +7,11 @@ import android.os.Looper;
 
 public class ModalDialogBuilder extends AlertDialog.Builder {
     public Object result;
-    Handler handler = new SyncDialogMessageHandler(Looper.getMainLooper());
+    private Handler handler = new SyncDialogMessageHandler(Looper.getMainLooper());
 
     public ModalDialogBuilder(Context context) {
         super(context);
+        this.setOnDismissListener(dialog -> handler.sendMessage(handler.obtainMessage()));
     }
 
     public Object showWithResult() {

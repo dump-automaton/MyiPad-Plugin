@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
         builder.setView(editText);
         builder.setPositiveButton("Yes", (dialog, whichButton) -> {
             builder.result = editText.getText();
-            builder.handler.sendMessage(builder.handler.obtainMessage());
         });
         String result = "" + builder.showWithResult();
         Toast.makeText(this, result, Toast.LENGTH_LONG).show();
