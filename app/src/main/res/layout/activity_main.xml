@@ -4,20 +4,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/background_material"
     tools:context=".ui.MainActivity">
 
-    <Switch
-        android:id="@+id/safe_mode_switch"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:checked="true"
-        android:text="@string/safe_mode"
-        android:textSize="16sp"/>
+        android:layout_marginBottom="6dp"
+        android:elevation="2dp"
+        android:background="@color/card_background">
+
+        <Switch
+            android:id="@+id/safe_mode_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:checked="true"
+            android:text="@string/safe_mode"
+            android:textSize="16sp"/>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="6dp"
+        android:elevation="2dp"
+        android:background="@color/card_background"
         android:orientation="vertical">
 
         <FrameLayout

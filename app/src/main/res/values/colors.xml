@@ -9,4 +9,13 @@
     <color name="amber_500">#FFC107</color>
 
     <color name="warning">@color/red_500</color>
+
+    <!-- light theme-->
+    <color name="background_material">#ffeeeeee</color>
+    <color name="list_download_item_color">#fff</color>
+    <color name="card_background">#fff</color>
+    <color name="card_background_pressed">#dfdfdf</color>
+    <color name="card_shadow">#dbdbdb</color>
+    <color name="pager_tab_strip_bg">#222</color>
+    <color name="sticky_header_background">#e5e5e5</color>
 </resources>
