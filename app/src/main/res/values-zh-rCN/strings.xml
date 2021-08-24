@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyiPad Plugin</string>
+    <string name="plugin_not_active">MyiPad Plugin 未激活</string>
+    <string name="plugin_active">MyiPad Plugin 已激活</string>
+</resources>

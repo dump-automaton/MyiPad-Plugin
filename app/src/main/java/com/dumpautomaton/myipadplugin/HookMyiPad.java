@@ -15,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dumpautomaton.myipadplugin.ui.MainActivity;
 import com.dumpautomaton.myipadplugin.ui.PluginPreferenceFragment;
 import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
 
@@ -42,6 +43,14 @@ public class HookMyiPad implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Exception {
+        if (lpparam.packageName.equals(BuildConfig.APPLICATION_ID)) {
+            XposedHelpers.findAndHookMethod("com.dumpautomaton.myipadplugin.ui.MainActivity", lpparam.classLoader, "isActive", new XC_MethodReplacement() {
+                @Override
+                protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                    return true;
+                }
+            });
+        }
         if (!lpparam.packageName.contains("com.netspace")) {
             return;
         }

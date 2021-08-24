@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MyiPad Plugin</string>
+    <string name="plugin_not_active">MyiPad Plugin is not active.</string>
+    <string name="plugin_active">MyiPad Plugin is active.</string>
 </resources>
