@@ -6,6 +6,7 @@
 
     <color name="darker_green">#4CAF50</color>
     <color name="red_500">#F44336</color>
+    <color name="amber_500">#FFC107</color>
 
     <color name="warning">@color/red_500</color>
 </resources>

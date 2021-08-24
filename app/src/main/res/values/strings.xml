@@ -2,4 +2,6 @@
     <string name="app_name">MyiPad Plugin</string>
     <string name="plugin_not_active">MyiPad Plugin is not active.</string>
     <string name="plugin_active">MyiPad Plugin is active.</string>
+    <string name="plugin_safe_mode">MyiPad Plugin is active, but safe mode is on.</string>
+    <string name="safe_mode">Safe Mode</string>
 </resources>

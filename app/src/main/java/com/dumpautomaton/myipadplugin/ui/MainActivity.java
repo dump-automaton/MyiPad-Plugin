@@ -10,10 +10,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dumpautomaton.myipadplugin.R;
+import com.dumpautomaton.myipadplugin.UtilsForHook;
 
 public class MainActivity extends Activity {
 
@@ -38,6 +40,17 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+
+        Switch safeModeSwitch = findViewById(R.id.safe_mode_switch);
+        safeModeSwitch.setChecked(UtilsForHook.isSafeMode());
+        safeModeSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
+            if (!UtilsForHook.setSafeMode(b)) {
+                compoundButton.setChecked(!b);
+            }
+        });
         refreshInstallStatus();
     }
 
@@ -45,12 +58,18 @@ public class MainActivity extends Activity {
         TextView txtInstallError = (TextView) findViewById(R.id.plugin_install_errors);
         View txtInstallContainer = findViewById(R.id.status_container);
         ImageView txtInstallIcon = (ImageView) findViewById(R.id.status_icon);
+        Switch safeModeSwitch = findViewById(R.id.safe_mode_switch);
 
         if (!isActive()) {
             txtInstallError.setText(R.string.plugin_not_active);
             txtInstallError.setTextColor(getResources().getColor(R.color.warning));
             txtInstallContainer.setBackgroundColor(getResources().getColor(R.color.warning));
             txtInstallIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_error));
+        } else if (isActive() && safeModeSwitch.isChecked()) {
+            txtInstallError.setText(R.string.plugin_safe_mode);
+            txtInstallError.setTextColor(getResources().getColor(R.color.amber_500));
+            txtInstallContainer.setBackgroundColor(getResources().getColor(R.color.amber_500));
+            txtInstallIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_warning));
         } else {
             txtInstallError.setText(R.string.plugin_active);
             txtInstallError.setTextColor(getResources().getColor(R.color.darker_green));
@@ -60,9 +79,6 @@ public class MainActivity extends Activity {
     }
 
     public void demoModalDialog() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
         ModalDialogBuilder builder = new ModalDialogBuilder(this);
         final EditText editText = new EditText(this);
         editText.setHint("Leave out blank for default");

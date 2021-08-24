@@ -9,6 +9,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.widget.EditText;
 
+import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
+
 import java.io.File;
 
 @SuppressWarnings("CatchMayIgnoreException")
@@ -20,12 +22,25 @@ public class UtilsForHook {
         }
     };
 
+    private static File safeModeTxtFile;
     public static File getSafeModeTxtFile() {
-        return new File(Environment.getExternalStorageDirectory(), "plugin_safe_mode.txt");
+        if (safeModeTxtFile == null) {
+            safeModeTxtFile = new File(Environment.getExternalStorageDirectory(), "plugin_safe_mode.txt");
+        }
+        return safeModeTxtFile;
     }
 
     public static boolean isSafeMode() {
         return getSafeModeTxtFile().exists();
+    }
+
+    public static boolean setSafeMode(boolean safeMode) {
+        if (safeMode && !isSafeMode()) {
+            return FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
+        } else if (!safeMode && isSafeMode()) {
+            return getSafeModeTxtFile().delete();
+        }
+        return true;
     }
 
     private static String mStringResult;

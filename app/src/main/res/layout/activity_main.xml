@@ -6,6 +6,15 @@
     android:orientation="vertical"
     tools:context=".ui.MainActivity">
 
+    <Switch
+        android:id="@+id/safe_mode_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:checked="true"
+        android:text="@string/safe_mode"
+        android:textSize="16sp"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
