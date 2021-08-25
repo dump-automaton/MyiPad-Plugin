@@ -47,10 +47,7 @@ public class PluginPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object object) {
                 boolean checked = (boolean) object;
-                if (checked) {
-                    FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
-                    return true;
-                } else return UtilsForHook.getSafeModeTxtFile().delete();
+                return UtilsForHook.setSafeMode(checked);
             }
         });
 

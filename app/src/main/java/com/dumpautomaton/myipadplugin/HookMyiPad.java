@@ -58,7 +58,7 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         if (System.getProperty("vxp") != null) {
             runInVxp = true;
         }
-        XposedHelpers.findAndHookMethod(Thread.class, "dispatchUncaughtException", Throwable.class, new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("com.android.internal.os.RuntimeInit$UncaughtHandler", lpparam.classLoader, "uncaughtException", Thread.class, Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
