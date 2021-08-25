@@ -1,43 +1,69 @@
 package com.dumpautomaton.myipadplugin.ui;
 
-import android.app.Fragment;
+import android.app.ActionBar;
 import android.app.ListFragment;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.format.DateFormat;
-import android.view.LayoutInflater;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dumpautomaton.myipadplugin.R;
 import com.dumpautomaton.myipadplugin.UtilsForHook;
 import com.dumpautomaton.myipadplugin.data.CrashLog;
 import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class CrashLogFragment extends ListFragment {
+    private CrashLogArrayAdapter mAdapter;
+
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
         ArrayList<CrashLog> crashLogs = new ArrayList<>();
-        String[] logs = FileIOUtils.readFile2String(UtilsForHook.getCrashLogTxtFile()).split("------");
-        for (String log : logs) {
-            if (!log.equals("")) {
-                crashLogs.add(new CrashLog(log));
+        try {
+            String[] logs = FileIOUtils.readFile2String(UtilsForHook.getCrashLogTxtFile()).split("------");
+            for (String log : logs) {
+                if (!log.equals("")) {
+                    crashLogs.add(new CrashLog(log));
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        setListAdapter(new CrashLogArrayAdapter(getActivity(), crashLogs));
+        mAdapter = new CrashLogArrayAdapter(getActivity(), crashLogs);
+        setListAdapter(mAdapter);
+        setEmptyText("No crash log found.");
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int sixDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, metrics);
+        int eightDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, metrics);
+        getListView().setDivider(null);
+        getListView().setDividerHeight(sixDp);
+        getListView().setPadding(eightDp, eightDp, eightDp, eightDp);
+        getListView().setClipToPadding(false);
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        ClipboardManager clipboard = (ClipboardManager)
+                getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("simple text", mAdapter.getItem(position).stackTrace);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(getActivity(), "Crash log is copied to clipboard.", Toast.LENGTH_LONG).show();
     }
 
     public class CrashLogArrayAdapter extends ArrayAdapter<CrashLog> {

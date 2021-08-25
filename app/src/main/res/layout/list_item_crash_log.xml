@@ -5,6 +5,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@color/card_background"
+    android:elevation="2dp"
     android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="?android:attr/listPreferredItemHeight">
 
