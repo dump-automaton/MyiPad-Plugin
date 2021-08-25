@@ -51,6 +51,15 @@ public class PluginPreferenceFragment extends PreferenceFragment {
             }
         });
 
+        final Preference restartAppPreference = findPreference("restart_app");
+        restartAppPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                UtilsForHook.restartApp(getActivity().getApplication());
+                return true;
+            }
+        });
+
         final CheckBoxPreference fakeHardwareInfoPreference = (CheckBoxPreference) findPreference("fake_hardware_info");
         fakeHardwareInfoPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override

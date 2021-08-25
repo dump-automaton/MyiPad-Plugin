@@ -5,6 +5,10 @@
         android:title="@string/safe_mode"
         android:summary="@string/safe_mode_summary"
         android:defaultValue="false"/>
+    <Preference
+        android:key="restart_app"
+        android:title="@string/restart_app"
+        android:summary="@string/restart_app_summary"/>
     <PreferenceCategory
         android:title="@string/compatibility">
         <CheckBoxPreference

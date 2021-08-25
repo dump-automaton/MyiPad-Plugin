@@ -1,12 +1,15 @@
 package com.dumpautomaton.myipadplugin;
 
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Process;
 import android.widget.EditText;
 
 import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
@@ -41,6 +44,17 @@ public class UtilsForHook {
             return getSafeModeTxtFile().delete();
         }
         return true;
+    }
+
+    public static void restartApp(Application app) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent LaunchIntent = app.getPackageManager().getLaunchIntentForPackage(app.getPackageName());
+                app.startActivity(LaunchIntent);
+                Process.killProcess(Process.myPid());
+            }
+        }, 100);
     }
 
     private static String mStringResult;

@@ -29,4 +29,6 @@
     <string name="debug">Debug</string>
     <string name="disable_ssl_pinning">Disable SSL Pinning</string>
     <string name="dump_logcat">Dump logcat</string>
+    <string name="restart_app">Restart application</string>
+    <string name="restart_app_summary">Changes will take effect after the App is restarted.</string>
 </resources>

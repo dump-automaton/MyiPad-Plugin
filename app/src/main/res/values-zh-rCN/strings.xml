@@ -30,4 +30,6 @@
     <string name="debug">调试</string>
     <string name="disable_ssl_pinning">禁用 SSL 固定</string>
     <string name="dump_logcat">导出日志</string>
+    <string name="restart_app">重启应用程序</string>
+    <string name="restart_app_summary">设置更改将在应用程序重启后生效</string>
 </resources>
