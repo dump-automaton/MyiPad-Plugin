@@ -31,4 +31,6 @@
     <string name="dump_logcat">Dump logcat</string>
     <string name="restart_app">Restart application</string>
     <string name="restart_app_summary">Changes will take effect after the App is restarted.</string>
+    <string name="home">Home</string>
+    <string name="crash_log">Crash log</string>
 </resources>

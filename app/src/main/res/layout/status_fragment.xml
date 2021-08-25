@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_material"
+    tools:context=".ui.MainActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:elevation="2dp"
+        android:background="@color/card_background">
+
+        <Switch
+            android:id="@+id/safe_mode_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:checked="true"
+            android:text="@string/safe_mode"
+            android:textSize="16sp"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="6dp"
+        android:elevation="2dp"
+        android:background="@color/card_background"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/status_container"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:foregroundGravity="center"
+            android:orientation="vertical"
+            tools:background="@color/darker_green">
+
+            <ImageView
+                android:id="@+id/status_icon"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
+                android:layout_gravity="center"
+                tools:src="@drawable/ic_check_circle"/>
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/plugin_install_errors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="6dp"
+            android:textColor="@color/warning"
+            android:textStyle="bold"
+            tools:text="@string/plugin_active"
+            tools:textColor="@color/darker_green"/>
+
+    </LinearLayout>
+
+</LinearLayout>

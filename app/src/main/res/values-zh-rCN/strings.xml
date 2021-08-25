@@ -32,4 +32,6 @@
     <string name="dump_logcat">导出日志</string>
     <string name="restart_app">重启应用程序</string>
     <string name="restart_app_summary">设置更改将在应用程序重启后生效</string>
+    <string name="home">首页</string>
+    <string name="crash_log">崩溃日志</string>
 </resources>

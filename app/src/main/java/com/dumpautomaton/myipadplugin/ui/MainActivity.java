@@ -2,14 +2,22 @@ package com.dumpautomaton.myipadplugin.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -26,7 +34,7 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    public boolean isActive() {
+    public static boolean isActive() {
         Log.d("MyiPad-Plugin", "Test is active");
         return false;
     }
@@ -47,50 +55,45 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Switch safeModeSwitch = findViewById(R.id.safe_mode_switch);
-        safeModeSwitch.setChecked(UtilsForHook.isSafeMode());
-        safeModeSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-            }
-            if (!UtilsForHook.setSafeMode(b)) {
-                compoundButton.setChecked(!b);
-            }
-        });
-        refreshInstallStatus();
-
-        ListView crashLogListview = (ListView) findViewById(R.id.crash_log_listview);
-        ArrayList<CrashLog> crashLogs = new ArrayList<>();
-        String[] logs = FileIOUtils.readFile2String(UtilsForHook.getCrashLogTxtFile()).split("------");
-        for (String log : logs) {
-            if (!log.equals("")) {
-                crashLogs.add(new CrashLog(log));
-            }
-        }
-        crashLogListview.setAdapter(new CrashLogArrayAdapter(this, crashLogs));
+        navigate(R.id.nav_status);
     }
 
-    private void refreshInstallStatus() {
-        TextView txtInstallError = (TextView) findViewById(R.id.plugin_install_errors);
-        View txtInstallContainer = findViewById(R.id.status_container);
-        ImageView txtInstallIcon = (ImageView) findViewById(R.id.status_icon);
-        Switch safeModeSwitch = findViewById(R.id.safe_mode_switch);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-        if (!isActive()) {
-            txtInstallError.setText(R.string.plugin_not_active);
-            txtInstallError.setTextColor(getResources().getColor(R.color.warning));
-            txtInstallContainer.setBackgroundColor(getResources().getColor(R.color.warning));
-            txtInstallIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_error));
-        } else if (isActive() && safeModeSwitch.isChecked()) {
-            txtInstallError.setText(R.string.plugin_safe_mode);
-            txtInstallError.setTextColor(getResources().getColor(R.color.amber_500));
-            txtInstallContainer.setBackgroundColor(getResources().getColor(R.color.amber_500));
-            txtInstallIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_warning));
-        } else {
-            txtInstallError.setText(R.string.plugin_active);
-            txtInstallError.setTextColor(getResources().getColor(R.color.darker_green));
-            txtInstallContainer.setBackgroundColor(getResources().getColor(R.color.darker_green));
-            txtInstallIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_circle));
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        navigate(item.getItemId());
+        return true;
+    }
+
+    private void navigate(final int itemId) {
+        //final View elevation = findViewById(R.id.elevation);
+        Fragment navFragment = null;
+        switch (itemId) {
+            case R.id.nav_status:
+                //mPrevSelectedId = itemId;
+                setTitle(R.string.app_name);
+                navFragment = new StatusFragment();
+                break;
+            case R.id.nav_crash_log:
+                setTitle(R.string.crash_log);
+                navFragment = new CrashLogFragment();
+                break;
+        }
+
+        //final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(4));
+
+        if (navFragment != null) {
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            //transaction.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
+            try {
+                transaction.replace(R.id.content_frame, navFragment).commit();
+            } catch (IllegalStateException ignored) {
+            }
         }
     }
 
