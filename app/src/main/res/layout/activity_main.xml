@@ -65,4 +65,15 @@
 
     </LinearLayout>
 
+    <ListView
+        android:id="@+id/crash_log_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="6dp"
+        android:background="@color/card_background"
+        android:elevation="2dp"
+        android:divider="@null"/>
+
 </LinearLayout>

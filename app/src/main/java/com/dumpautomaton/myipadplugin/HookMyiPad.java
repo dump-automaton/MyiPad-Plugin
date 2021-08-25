@@ -58,12 +58,18 @@ public class HookMyiPad implements IXposedHookLoadPackage {
         if (System.getProperty("vxp") != null) {
             runInVxp = true;
         }
+        final String packageName = lpparam.packageName;
         XposedHelpers.findAndHookMethod("com.android.internal.os.RuntimeInit$UncaughtHandler", lpparam.classLoader, "uncaughtException", Thread.class, Throwable.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                String stackTraceString = Log.getStackTraceString((Throwable) param.args[0]);
-                FileIOUtils.writeFileFromString(new File(Environment.getExternalStorageDirectory(), "MyiPad_Plugin_Crash_" + System.currentTimeMillis() + ".txt"), stackTraceString);
-                FileIOUtils.writeFileFromString(UtilsForHook.getSafeModeTxtFile(), "delete me to exit safe mode");
+                String stackTraceString = Log.getStackTraceString((Throwable) param.args[1]);
+                File crashLogFile = UtilsForHook.getCrashLogTxtFile();
+                String oldStacktrace = FileIOUtils.readFile2String(crashLogFile);
+                if (oldStacktrace != null) {
+                    stackTraceString += oldStacktrace;
+                }
+                FileIOUtils.writeFileFromString(crashLogFile, "------" + packageName + ":" + System.currentTimeMillis() + "\n" + stackTraceString);
+                UtilsForHook.setSafeMode(true);
             }
         });
         XposedHelpers.findAndHookMethod("android.app.Instrumentation", lpparam.classLoader, "newApplication", ClassLoader.class, String.class, Context.class, new AppCreateHookCallback());

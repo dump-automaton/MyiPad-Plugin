@@ -46,6 +46,14 @@ public class UtilsForHook {
         return true;
     }
 
+    private static File crashLogTxtFile;
+    public static File getCrashLogTxtFile() {
+        if (crashLogTxtFile == null) {
+            crashLogTxtFile = new File(Environment.getExternalStorageDirectory(), "MyiPad_Plugin_Crash.txt");
+        }
+        return crashLogTxtFile;
+    }
+
     public static void restartApp(Application app) {
         new Handler().postDelayed(new Runnable() {
             @Override

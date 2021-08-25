@@ -10,12 +10,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dumpautomaton.myipadplugin.R;
 import com.dumpautomaton.myipadplugin.UtilsForHook;
+import com.dumpautomaton.myipadplugin.data.CrashLog;
+import com.dumpautomaton.myipadplugin.utils.FileIOUtils;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -51,6 +58,16 @@ public class MainActivity extends Activity {
             }
         });
         refreshInstallStatus();
+
+        ListView crashLogListview = (ListView) findViewById(R.id.crash_log_listview);
+        ArrayList<CrashLog> crashLogs = new ArrayList<>();
+        String[] logs = FileIOUtils.readFile2String(UtilsForHook.getCrashLogTxtFile()).split("------");
+        for (String log : logs) {
+            if (!log.equals("")) {
+                crashLogs.add(new CrashLog(log));
+            }
+        }
+        crashLogListview.setAdapter(new CrashLogArrayAdapter(this, crashLogs));
     }
 
     private void refreshInstallStatus() {
